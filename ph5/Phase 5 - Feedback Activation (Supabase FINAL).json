@@ -1,0 +1,1919 @@
+{
+  "name": "Phase 5 - Feedback Activation (Supabase FINAL)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "close-order-simple",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "61e86cf9-453f-492b-9152-5e1c23e9b561",
+      "name": "Close Order Simple Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        -1024
+      ],
+      "webhookId": "bad00333-bb48-4ca1-a6b2-290db207a425"
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "close-order-simple",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "4ba2e5c0-7e33-4f34-804c-3f0d16ce3c4d",
+      "name": "Close Order Simple Form Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        -1264
+      ],
+      "webhookId": "c7d2db35-c1f3-4f8b-9e3c-03ef48b7e29c"
+    },
+    {
+      "parameters": {
+        "functionCode": "const html = `<!DOCTYPE html>\n<html lang=\"fa\" dir=\"rtl\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  <title>کنسول مدیریت بازخورد</title>\n  <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n  <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n  <link href=\"https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap\" rel=\"stylesheet\">\n  <style>\n    :root {\n      --bg-dark: #030712;\n      --card-bg: rgba(23, 29, 45, 0.6);\n      --card-border: rgba(255, 255, 255, 0.08);\n      --card-shine: rgba(255, 255, 255, 0.03);\n      \n      --primary: #3b82f6;\n      --primary-glow: rgba(59, 130, 246, 0.5);\n      --accent: #06b6d4;\n      \n      --text-main: #f8fafc;\n      --text-muted: #94a3b8;\n      \n      --success: #10b981;\n      \n      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);\n    }\n\n    * { box-sizing: border-box; outline: none; }\n\n    body {\n      margin: 0;\n      font-family: 'Vazirmatn', sans-serif;\n      background-color: var(--bg-dark);\n      background-image: \n        radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),\n        radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.15), transparent 25%);\n      color: var(--text-main);\n      min-height: 100vh;\n      display: flex;\n      flex-direction: column;\n      align-items: center;\n      justify-content: center;\n      padding: 40px 20px;\n    }\n\n    /* Background Noise Texture */\n    body::before {\n      content: \"\";\n      position: fixed;\n      inset: 0;\n      background-image: url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E\");\n      pointer-events: none;\n      z-index: -1;\n    }\n\n    .header {\n      text-align: center;\n      margin-bottom: 48px;\n      animation: fadeIn 0.8s var(--ease-out);\n    }\n    \n    .header h1 {\n      font-size: 32px;\n      font-weight: 800;\n      margin: 0 0 12px 0;\n      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);\n      -webkit-background-clip: text;\n      -webkit-text-fill-color: transparent;\n      letter-spacing: -0.02em;\n    }\n    \n    .header p {\n      color: var(--text-muted);\n      font-size: 15px;\n    }\n\n    .layout {\n      display: grid;\n      gap: 32px;\n      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));\n      width: 100%;\n      max-width: 900px;\n    }\n\n    /* Glass Card */\n    .card {\n      background: var(--card-bg);\n      backdrop-filter: blur(24px);\n      -webkit-backdrop-filter: blur(24px);\n      border: 1px solid var(--card-border);\n      border-radius: 24px;\n      padding: 32px;\n      box-shadow: \n        0 0 0 1px var(--card-shine) inset,\n        0 24px 48px -12px rgba(0, 0, 0, 0.6);\n      transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);\n      position: relative;\n      overflow: hidden;\n    }\n\n    .card:hover {\n      transform: translateY(-4px);\n      box-shadow: \n        0 0 0 1px rgba(255,255,255,0.1) inset,\n        0 32px 64px -16px rgba(0, 0, 0, 0.7);\n    }\n\n    /* Pill Badge */\n    .pill {\n      display: inline-flex;\n      align-items: center;\n      padding: 6px 12px;\n      background: rgba(59, 130, 246, 0.1);\n      border: 1px solid rgba(59, 130, 246, 0.2);\n      border-radius: 99px;\n      font-size: 12px;\n      font-weight: 600;\n      color: #60a5fa;\n      margin-bottom: 20px;\n      /* text-transform: uppercase; removed for Persian */\n    }\n    \n    .card:nth-child(2) .pill {\n      background: rgba(6, 182, 212, 0.1);\n      border-color: rgba(6, 182, 212, 0.2);\n      color: #22d3ee;\n    }\n\n    h2 { \n      font-size: 22px; \n      font-weight: 700; \n      margin: 0 0 8px 0; \n      color: var(--text-main);\n    }\n    \n    p.desc { \n      font-size: 14px; \n      color: var(--text-muted); \n      margin: 0 0 24px 0; \n      line-height: 1.7; \n    }\n\n    /* Form Elements */\n    .input-row {\n      display: grid;\n      grid-template-columns: 1fr 1fr;\n      gap: 16px;\n      margin-bottom: 20px;\n    }\n\n    .input-group {\n      display: flex;\n      flex-direction: column;\n      gap: 8px;\n    }\n\n    label {\n      font-size: 13px;\n      font-weight: 600;\n      color: var(--text-muted);\n      margin-right: 2px; /* RTL fix */\n    }\n\n    .input-wrapper {\n      position: relative;\n    }\n\n    input {\n      width: 100%;\n      padding: 12px 16px;\n      padding-right: 40px; /* Space for icon RTL */\n      padding-left: 16px;\n      background: rgba(0, 0, 0, 0.3);\n      border: 1px solid var(--card-border);\n      border-radius: 12px;\n      color: var(--text-main);\n      font-family: inherit;\n      font-size: 14px;\n      transition: all 0.2s ease;\n      text-align: right;\n    }\n\n    input::placeholder {\n      font-family: 'Vazirmatn', sans-serif;\n      opacity: 0.5;\n    }\n\n    input:focus {\n      border-color: var(--primary);\n      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);\n      background: rgba(0, 0, 0, 0.4);\n    }\n\n    /* Input Icons RTL */\n    .input-icon {\n      position: absolute;\n      right: 12px; /* RTL */\n      top: 50%;\n      transform: translateY(-50%);\n      width: 18px;\n      height: 18px;\n      color: var(--text-muted);\n      pointer-events: none;\n      transition: color 0.2s;\n    }\n    \n    input:focus + .input-icon { color: var(--primary); }\n\n    /* Custom Toggle Switch */\n    .toggle-container {\n      display: flex;\n      align-items: center;\n      gap: 12px;\n      margin-bottom: 24px;\n      cursor: pointer;\n      user-select: none;\n      padding: 8px 0;\n    }\n\n    .toggle-switch {\n      width: 44px;\n      height: 24px;\n      background: rgba(255,255,255,0.1);\n      border-radius: 99px;\n      position: relative;\n      transition: background 0.3s var(--ease-out);\n    }\n    \n    /* Toggle Knob RTL Logic */\n    .toggle-knob {\n      width: 20px;\n      height: 20px;\n      background: white;\n      border-radius: 50%;\n      position: absolute;\n      top: 2px;\n      right: 2px; /* Start from right in RTL context or keep standard logic? */\n      /* Ideally standard toggle logic: OFF is usually grey, ON is colored. */\n      /* Let's keep visually Left=OFF, Right=ON even in RTL for familiarity, or adapt. \n         Let's stick to standard: knob moves to the other side. */\n      right: unset;\n      left: 2px;\n      transition: transform 0.3s var(--ease-out);\n      box-shadow: 0 2px 4px rgba(0,0,0,0.2);\n    }\n\n    /* Hidden Checkbox */\n    input[type=\"checkbox\"] { display: none; }\n    \n    input[type=\"checkbox\"]:checked + .toggle-switch {\n      background: var(--primary);\n    }\n    \n    input[type=\"checkbox\"]:checked + .toggle-switch .toggle-knob {\n      transform: translateX(20px);\n    }\n\n    .toggle-label { font-size: 13px; color: var(--text-main); font-weight: 500; }\n\n    /* Button */\n    button {\n      width: 100%;\n      padding: 14px;\n      background: linear-gradient(135deg, var(--primary), #2563eb);\n      color: white;\n      border: none;\n      border-radius: 12px;\n      font-family: inherit;\n      font-weight: 700;\n      font-size: 15px;\n      cursor: pointer;\n      position: relative;\n      overflow: hidden;\n      transition: all 0.3s var(--ease-out);\n      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);\n    }\n    \n    button::before {\n      content: \"\";\n      position: absolute;\n      top: 0; left: 0; width: 100%; height: 100%;\n      background: linear-gradient(rgba(255,255,255,0.1), transparent);\n      opacity: 0;\n      transition: opacity 0.3s;\n    }\n\n    button:hover {\n      transform: translateY(-2px);\n      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);\n    }\n    \n    button:hover::before { opacity: 1; }\n    \n    button:active { transform: translateY(0); }\n\n    .card:nth-child(2) button {\n      background: linear-gradient(135deg, var(--accent), #0891b2);\n      box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);\n    }\n    .card:nth-child(2) button:hover {\n      box-shadow: 0 8px 20px rgba(8, 145, 178, 0.4);\n    }\n\n    .footer {\n      margin-top: 16px;\n      text-align: center;\n      font-size: 12px;\n      font-family: monospace; /* Keep English for paths */\n      direction: ltr; /* Paths should be LTR */\n      color: var(--text-muted);\n      opacity: 0.6;\n    }\n\n    /* Toast Notification */\n    .toast-container {\n      position: fixed;\n      bottom: 32px;\n      left: 50%;\n      transform: translateX(-50%);\n      z-index: 100;\n      display: flex;\n      flex-direction: column;\n      gap: 10px;\n      pointer-events: none;\n    }\n\n    .toast {\n      background: #1e293b;\n      color: white;\n      padding: 12px 20px;\n      border-radius: 99px;\n      box-shadow: 0 10px 40px rgba(0,0,0,0.5);\n      border: 1px solid rgba(255,255,255,0.1);\n      font-size: 14px;\n      font-weight: 500;\n      display: flex;\n      align-items: center;\n      gap: 12px;\n      opacity: 0;\n      transform: translateY(20px);\n      transition: all 0.4s var(--ease-out);\n    }\n    \n    .toast.show { opacity: 1; transform: translateY(0); }\n    \n    .toast-icon {\n      width: 20px; height: 20px;\n      background: var(--success);\n      border-radius: 50%;\n      display: flex; \n      align-items: center; justify-content: center;\n      color: black;\n      font-size: 12px;\n    }\n\n    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }\n\n    /* Mobile */\n    @media (max-width: 600px) {\n      .input-row { grid-template-columns: 1fr; gap: 12px; }\n      .layout { grid-template-columns: 1fr; }\n    }\n  </style>\n</head>\n<body>\n\n  <div class=\"header\">\n    <h1>کنسول مدیریت بازخورد</h1>\n    <p>مدیریت جریان سفارشات و حالت کیوسک به صورت امن و سریع.</p>\n  </div>\n\n  <div class=\"layout\">\n    \n    <!-- CARD 1: Close Order -->\n    <div class=\"card\">\n      <div class=\"pill\">عملیات الزامی</div>\n      <h2>بستن سفارش (Close Order)</h2>\n      <p class=\"desc\">اطلاعات را برای پایان نشست مشتری وارد کنید. وارد کردن حداقل یکی از شناسه‌ها الزامی است.</p>\n      \n      <form id=\"close-form\">\n        <div class=\"input-row\">\n          <div class=\"input-group\">\n            <label>شناسه میز (Table ID)</label>\n            <div class=\"input-wrapper\">\n              <input name=\"table_id\" placeholder=\"مثلاً: T-12\" />\n              <!-- SVG Icon Table -->\n              <svg class=\"input-icon\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z\" />\n              </svg>\n            </div>\n          </div>\n          <div class=\"input-group\">\n            <label>شناسه سفارش (Order ID)</label>\n            <div class=\"input-wrapper\">\n              <input name=\"order_id\" placeholder=\"مثلاً: ORD-456\" />\n              <!-- SVG Icon Hash -->\n              <svg class=\"input-icon\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M7 20l4-16m2 16l4-16M6 9h14M4 15h14\" />\n              </svg>\n            </div>\n          </div>\n        </div>\n        \n        <label class=\"toggle-container\">\n          <input type=\"checkbox\" name=\"feedback_opt_out\">\n          <div class=\"toggle-switch\"><div class=\"toggle-knob\"></div></div>\n          <span class=\"toggle-label\">عدم ارسال درخواست فیدبک</span>\n        </label>\n        \n        <button type=\"submit\">بستن سفارش</button>\n        <div class=\"footer\">POST /close-order-simple</div>\n      </form>\n    </div>\n\n    <!-- CARD 2: Activate Feedback -->\n    <div class=\"card\">\n      <div class=\"pill\">حالت دستگاه</div>\n      <h2>فعال‌سازی کیوسک</h2>\n      <p class=\"desc\">راه‌اندازی نقطه جمع‌آوری نظرات و بازخورد برای یک میز مشخص.</p>\n      \n      <form id=\"activate-form\">\n        <div class=\"input-row\">\n          <div class=\"input-group\">\n            <label>شناسه میز (Table ID)</label>\n            <div class=\"input-wrapper\">\n              <input name=\"table_id\" placeholder=\"مثلاً: T-12\" />\n              <svg class=\"input-icon\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z\" />\n              </svg>\n            </div>\n          </div>\n          <div class=\"input-group\">\n            <label>شناسه سفارش (Order ID)</label>\n            <div class=\"input-wrapper\">\n              <input name=\"order_id\" placeholder=\"مثلاً: ORD-456\" />\n              <svg class=\"input-icon\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M7 20l4-16m2 16l4-16M6 9h14M4 15h14\" />\n              </svg>\n            </div>\n          </div>\n        </div>\n        \n        <div style=\"font-size:13px; color:var(--text-muted); margin-bottom:24px; display:flex; gap:6px; align-items:center;\">\n          <svg style=\"width:16px;\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" /></svg>\n          حالت کیوسک بلافاصله فعال می‌شود.\n        </div>\n        \n        <button type=\"submit\">فعال‌سازی بازخورد</button>\n        <div class=\"footer\">POST /activate-feedback</div>\n      </form>\n    </div>\n  </div>\n\n  <div class=\"toast-container\" id=\"toast-area\"></div>\n\n  <script>\n    // Toast Notification System\n    function showToast(message, type = 'success') {\n      const container = document.getElementById('toast-area');\n      const toast = document.createElement('div');\n      toast.className = 'toast';\n      toast.innerHTML = \\`\n        <div class=\"toast-icon\">\n          <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"></polyline></svg>\n        </div>\n        <span>${message}</span>\n      \\`;\n      \n      container.appendChild(toast);\n      \n      // Trigger animation\n      requestAnimationFrame(() => toast.classList.add('show'));\n\n      // Remove after delay\n      setTimeout(() => {\n        toast.classList.remove('show');\n        setTimeout(() => toast.remove(), 400);\n      }, 3000);\n    }\n\n    // Form Handlers\n    const getBasePath = () => {\n      const path = window.location.pathname || '';\n      if (path.includes('/webhook-test/')) return '/webhook-test';\n      if (path.includes('/webhook/')) return '/webhook';\n      return '';\n    };\n\n    const safeJson = async (res) => {\n      try { return await res.json(); } catch (e) { return {}; }\n    };\n\n    const setLoading = (btn, text, isLoading) => {\n      if (!btn) return;\n      btn.disabled = isLoading;\n      btn.style.opacity = isLoading ? '0.7' : '1';\n      if (text) btn.innerText = text;\n    };\n\n    const formatTarget = (data) => {\n      if (!data) return '';\n      if (data.order_id && data.table_id) return 'Order ' + data.order_id + ' / Table ' + data.table_id;\n      if (data.order_id) return 'Order ' + data.order_id;\n      if (data.table_id) return 'Table ' + data.table_id;\n      return '';\n    };\n\n    const postForm = async (endpoint, payload) => {\n      const base = getBasePath();\n      const res = await fetch(base + endpoint, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(payload)\n      });\n      const data = await safeJson(res);\n      if (!res.ok || data.ok === false) {\n        const msg = data.error || data.message || 'Error sending request.';\n        showToast(msg);\n        return { ok: false, data };\n      }\n      if (data.warning_unpaid) {\n        showToast('Warning: this order is unpaid.');\n      }\n      return { ok: true, data };\n    };\n\n    document.getElementById('close-form').addEventListener('submit', async (e) => {\n      e.preventDefault();\n      const form = e.target;\n      const btn = form.querySelector('button');\n      const originalText = btn.innerText;\n\n      const tableId = (form.table_id.value || '').trim();\n      const orderId = (form.order_id.value || '').trim();\n      if (!tableId && !orderId) {\n        showToast('Please provide order ID or table ID.');\n        return;\n      }\n\n      setLoading(btn, 'Closing order...', true);\n      try {\n        const payload = {\n          table_id: tableId || null,\n          order_id: orderId || null,\n          feedback_opt_out: !!form.feedback_opt_out.checked\n        };\n        const result = await postForm('/close-order-simple', payload);\n        if (result.ok) {\n          const target = formatTarget(result.data);\n          showToast(result.data.message || (target ? 'Order ?Table ??: ' + target : 'Order ?? ?Order ?Table ??!'));\n          form.reset();\n        }\n      } catch (err) {\n        showToast('Network error. Please try again.');\n      } finally {\n        setLoading(btn, originalText, false);\n      }\n    });\n\n    document.getElementById('activate-form').addEventListener('submit', async (e) => {\n      e.preventDefault();\n      const form = e.target;\n      const btn = form.querySelector('button');\n      const originalText = btn.innerText;\n\n      const tableId = (form.table_id.value || '').trim();\n      const orderId = (form.order_id.value || '').trim();\n      if (!tableId && !orderId) {\n        showToast('Please provide order ID or table ID.');\n        return;\n      }\n\n      setLoading(btn, 'Activating kiosk...', true);\n      try {\n        const payload = {\n          table_id: tableId || null,\n          order_id: orderId || null\n        };\n        const result = await postForm('/activate-feedback', payload);\n        if (result.ok) {\n          const target = formatTarget(result.data);\n          const msg = result.data.message || (result.data.already_completed ? 'Feedback already submitted for this order.' : 'Feedback kiosk activated!');\n          showToast(target ? msg + ' (' + target + ')' : msg);\n          if (!result.data.already_completed) {\n            form.reset();\n          }\n        }\n      } catch (err) {\n        showToast('Network error. Please try again.');\n      } finally {\n        setLoading(btn, originalText, false);\n      }\n    });\n  </script>\n</body>\n</html>\n`;\nreturn [{ json: {}, binary: {}, pairedItem: { item: 0 }, headers: { 'Content-Type': 'text/html; charset=UTF-8' }, body: html }];"
+      },
+      "id": "0ab95b5d-ef8a-4518-86e9-32e523171365",
+      "name": "Render Close Form",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        -1264
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "fe05d5a5-5e2f-4f9d-a503-cab2224510db",
+      "name": "Return Close Form HTML",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        -1264
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const b = $json || {};\nlet table_id = (b.table_id || '').trim();\nlet order_id = (b.order_id || '').trim();\nconst feedback_opt_out = b.feedback_opt_out === true || ['true','1','yes','on'].includes(String(b.feedback_opt_out||'').toLowerCase());\nif (order_id) table_id = null;\nif (!table_id && !order_id) {\n  return [{ json: { ok: false, error: 'At least one of table_id or order_id is required.' } }];\n}\nreturn [{ json: { ok: true, table_id: table_id || null, order_id: order_id || null, feedback_opt_out } }];"
+      },
+      "id": "d55a47ab-f62b-4621-8107-a2373916ebca",
+      "name": "Validate Simple Input",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        -1024
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok === true}}"
+            }
+          ]
+        }
+      },
+      "id": "e4de67f9-f75d-48f0-aafe-2f2047a4e9a6",
+      "name": "Simple Input OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        -1024
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "fb20001a-c433-4902-865f-727e9be19d1d",
+      "name": "Return Simple Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -1168
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.SUPABASE_URL + '/rest/v1/orders?order_id=eq.' + encodeURIComponent($json.order_id || '') + '&select=*'}}",
+        "responseFormat": "json",
+        "sendHeaders": true,
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "options": {
+          "splitIntoItems": true
+        }
+      },
+      "id": "e0f4fd6b-c4cf-448f-b9ad-217d09aa81c9",
+      "name": "Read Order by ID (Simple)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -480,
+        -912
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{(() => { const since = new Date(Date.now() - 12*60*60*1000).toISOString(); return $env.SUPABASE_URL + '/rest/v1/orders?table_id=eq.' + encodeURIComponent($json.table_id || '') + '&created_at=gte.' + encodeURIComponent(since) + '&order=created_at.desc&limit=1&select=*'; })()}}",
+        "responseFormat": "json",
+        "sendHeaders": true,
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "options": {
+          "splitIntoItems": true
+        }
+      },
+      "id": "2b918eab-0eef-4584-8ca0-a5c525671bc3",
+      "name": "Read Orders (Table) Simple",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -480,
+        -704
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const toTime = (v) => Date.parse(v || '') || 0;\nconst sorted = items.slice().sort((a,b)=> toTime(b.json.created_at) - toTime(a.json.created_at));\nif (sorted.length === 0) return [];\nconst preferred = sorted.find(r => {\n  const status = String(r.json.order_status || r.json.status || '').toUpperCase();\n  const closedAt = r.json.closed_at;\n  return (status === 'OPEN' || status === 'SENT') && !closedAt;\n});\nreturn [{ json: (preferred ? preferred.json : sorted[0].json) }];"
+      },
+      "id": "6cf9e081-ab8e-42c0-a7c4-b3db713560a1",
+      "name": "Filter Latest Open (Simple)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        -704
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "passThrough",
+        "options": {}
+      },
+      "id": "640c903c-b468-4105-8403-b0783cc25cb4",
+      "name": "Merge Order (Simple)",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -848
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "if (!items || items.length === 0 || !items[0].json.order_id) {\n  return [{ json: { ok: false, error: 'No order found for this table/order.' } }];\n}\nreturn items.map(i => ({ json: { ...i.json, ok: true } }));"
+      },
+      "id": "aebd2983-a5d6-4fe0-ac96-fa0bf7896bdc",
+      "name": "Validate Order Found (Simple)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -848
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok === true}}"
+            }
+          ]
+        }
+      },
+      "id": "602e1a8e-b7ea-46a6-a29e-d869bf799ff0",
+      "name": "Simple Order Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        368,
+        -848
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 404
+        }
+      },
+      "id": "b3af705f-bbab-489d-b2d8-c40a1bb4686f",
+      "name": "Return Simple Not Found",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        576,
+        -992
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{(() => { const status = String($json.order_status || $json.status || '').toUpperCase(); return status === 'CLOSED' || !!$json.closed_at; })()}}"
+            }
+          ]
+        }
+      },
+      "id": "e106df52-8a4a-4beb-ad5f-d5d10383b7be",
+      "name": "Check Already Closed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        576,
+        -704
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const now = new Date().toISOString();\nconst input = $items('Validate Simple Input',0,0).json;\nreturn items.map(i=>({ json: {\n  ...i.json,\n  order_status: 'CLOSED',\n  status: 'CLOSED',\n  closed_at: now,\n  feedback_opt_out: input.feedback_opt_out === true,\n  already_closed: false,\n  update_payload: {\n    order_status: 'CLOSED',\n    status: 'CLOSED',\n    closed_at: now,\n    feedback_opt_out: input.feedback_opt_out === true\n  }\n} }));"
+      },
+      "id": "6f70f192-3300-48e4-bb4f-7f5f1b0ec326",
+      "name": "Prepare Close (Simple)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{$env.SUPABASE_URL + '/rest/v1/orders?order_id=eq.' + encodeURIComponent($json.order_id || '')}}",
+        "responseFormat": "json",
+        "sendHeaders": true,
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "options": {
+          "splitIntoItems": true
+        },
+        "jsonParameters": true,
+        "bodyParametersJson": "={{JSON.stringify($json.update_payload)}}"
+      },
+      "id": "20a3128d-e615-46d8-96df-5a3cb65ee6db",
+      "name": "Update Order (Simple)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1008,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "e48de639-1db1-49c1-acd8-21a4baeddaa1",
+      "name": "Return Close Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "activate-feedback",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "a36a381b-5d0b-4cb4-9356-0cb70c6d8e89",
+      "name": "Activate Feedback Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        -304
+      ],
+      "webhookId": "882be9f3-31a7-4606-8c36-af802f72cd1a"
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "activate-feedback",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "d3b37d64-b7fa-4a47-86e4-02a22c75d575",
+      "name": "Activate Feedback Form Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        256
+      ],
+      "webhookId": "c92c9eea-fab5-4493-b6ce-a570d3ead7ba"
+    },
+    {
+      "parameters": {
+        "functionCode": "const html = `<!DOCTYPE html>\n<html lang=\"fa\" dir=\"rtl\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  <title>کنسول مدیریت بازخورد</title>\n  <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n  <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n  <link href=\"https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap\" rel=\"stylesheet\">\n  <style>\n    :root {\n      --bg-dark: #030712;\n      --card-bg: rgba(23, 29, 45, 0.6);\n      --card-border: rgba(255, 255, 255, 0.08);\n      --card-shine: rgba(255, 255, 255, 0.03);\n      \n      --primary: #3b82f6;\n      --primary-glow: rgba(59, 130, 246, 0.5);\n      --accent: #06b6d4;\n      \n      --text-main: #f8fafc;\n      --text-muted: #94a3b8;\n      \n      --success: #10b981;\n      \n      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);\n    }\n\n    * { box-sizing: border-box; outline: none; }\n\n    body {\n      margin: 0;\n      font-family: 'Vazirmatn', sans-serif;\n      background-color: var(--bg-dark);\n      background-image: \n        radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),\n        radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.15), transparent 25%);\n      color: var(--text-main);\n      min-height: 100vh;\n      display: flex;\n      flex-direction: column;\n      align-items: center;\n      justify-content: center;\n      padding: 40px 20px;\n    }\n\n    /* Background Noise Texture */\n    body::before {\n      content: \"\";\n      position: fixed;\n      inset: 0;\n      background-image: url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E\");\n      pointer-events: none;\n      z-index: -1;\n    }\n\n    .header {\n      text-align: center;\n      margin-bottom: 48px;\n      animation: fadeIn 0.8s var(--ease-out);\n    }\n    \n    .header h1 {\n      font-size: 32px;\n      font-weight: 800;\n      margin: 0 0 12px 0;\n      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);\n      -webkit-background-clip: text;\n      -webkit-text-fill-color: transparent;\n      letter-spacing: -0.02em;\n    }\n    \n    .header p {\n      color: var(--text-muted);\n      font-size: 15px;\n    }\n\n    .layout {\n      display: grid;\n      gap: 32px;\n      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));\n      width: 100%;\n      max-width: 900px;\n    }\n\n    /* Glass Card */\n    .card {\n      background: var(--card-bg);\n      backdrop-filter: blur(24px);\n      -webkit-backdrop-filter: blur(24px);\n      border: 1px solid var(--card-border);\n      border-radius: 24px;\n      padding: 32px;\n      box-shadow: \n        0 0 0 1px var(--card-shine) inset,\n        0 24px 48px -12px rgba(0, 0, 0, 0.6);\n      transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);\n      position: relative;\n      overflow: hidden;\n    }\n\n    .card:hover {\n      transform: translateY(-4px);\n      box-shadow: \n        0 0 0 1px rgba(255,255,255,0.1) inset,\n        0 32px 64px -16px rgba(0, 0, 0, 0.7);\n    }\n\n    /* Pill Badge */\n    .pill {\n      display: inline-flex;\n      align-items: center;\n      padding: 6px 12px;\n      background: rgba(59, 130, 246, 0.1);\n      border: 1px solid rgba(59, 130, 246, 0.2);\n      border-radius: 99px;\n      font-size: 12px;\n      font-weight: 600;\n      color: #60a5fa;\n      margin-bottom: 20px;\n      /* text-transform: uppercase; removed for Persian */\n    }\n    \n    .card:nth-child(2) .pill {\n      background: rgba(6, 182, 212, 0.1);\n      border-color: rgba(6, 182, 212, 0.2);\n      color: #22d3ee;\n    }\n\n    h2 { \n      font-size: 22px; \n      font-weight: 700; \n      margin: 0 0 8px 0; \n      color: var(--text-main);\n    }\n    \n    p.desc { \n      font-size: 14px; \n      color: var(--text-muted); \n      margin: 0 0 24px 0; \n      line-height: 1.7; \n    }\n\n    /* Form Elements */\n    .input-row {\n      display: grid;\n      grid-template-columns: 1fr 1fr;\n      gap: 16px;\n      margin-bottom: 20px;\n    }\n\n    .input-group {\n      display: flex;\n      flex-direction: column;\n      gap: 8px;\n    }\n\n    label {\n      font-size: 13px;\n      font-weight: 600;\n      color: var(--text-muted);\n      margin-right: 2px; /* RTL fix */\n    }\n\n    .input-wrapper {\n      position: relative;\n    }\n\n    input {\n      width: 100%;\n      padding: 12px 16px;\n      padding-right: 40px; /* Space for icon RTL */\n      padding-left: 16px;\n      background: rgba(0, 0, 0, 0.3);\n      border: 1px solid var(--card-border);\n      border-radius: 12px;\n      color: var(--text-main);\n      font-family: inherit;\n      font-size: 14px;\n      transition: all 0.2s ease;\n      text-align: right;\n    }\n\n    input::placeholder {\n      font-family: 'Vazirmatn', sans-serif;\n      opacity: 0.5;\n    }\n\n    input:focus {\n      border-color: var(--primary);\n      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);\n      background: rgba(0, 0, 0, 0.4);\n    }\n\n    /* Input Icons RTL */\n    .input-icon {\n      position: absolute;\n      right: 12px; /* RTL */\n      top: 50%;\n      transform: translateY(-50%);\n      width: 18px;\n      height: 18px;\n      color: var(--text-muted);\n      pointer-events: none;\n      transition: color 0.2s;\n    }\n    \n    input:focus + .input-icon { color: var(--primary); }\n\n    /* Custom Toggle Switch */\n    .toggle-container {\n      display: flex;\n      align-items: center;\n      gap: 12px;\n      margin-bottom: 24px;\n      cursor: pointer;\n      user-select: none;\n      padding: 8px 0;\n    }\n\n    .toggle-switch {\n      width: 44px;\n      height: 24px;\n      background: rgba(255,255,255,0.1);\n      border-radius: 99px;\n      position: relative;\n      transition: background 0.3s var(--ease-out);\n    }\n    \n    /* Toggle Knob RTL Logic */\n    .toggle-knob {\n      width: 20px;\n      height: 20px;\n      background: white;\n      border-radius: 50%;\n      position: absolute;\n      top: 2px;\n      right: 2px; /* Start from right in RTL context or keep standard logic? */\n      /* Ideally standard toggle logic: OFF is usually grey, ON is colored. */\n      /* Let's keep visually Left=OFF, Right=ON even in RTL for familiarity, or adapt. \n         Let's stick to standard: knob moves to the other side. */\n      right: unset;\n      left: 2px;\n      transition: transform 0.3s var(--ease-out);\n      box-shadow: 0 2px 4px rgba(0,0,0,0.2);\n    }\n\n    /* Hidden Checkbox */\n    input[type=\"checkbox\"] { display: none; }\n    \n    input[type=\"checkbox\"]:checked + .toggle-switch {\n      background: var(--primary);\n    }\n    \n    input[type=\"checkbox\"]:checked + .toggle-switch .toggle-knob {\n      transform: translateX(20px);\n    }\n\n    .toggle-label { font-size: 13px; color: var(--text-main); font-weight: 500; }\n\n    /* Button */\n    button {\n      width: 100%;\n      padding: 14px;\n      background: linear-gradient(135deg, var(--primary), #2563eb);\n      color: white;\n      border: none;\n      border-radius: 12px;\n      font-family: inherit;\n      font-weight: 700;\n      font-size: 15px;\n      cursor: pointer;\n      position: relative;\n      overflow: hidden;\n      transition: all 0.3s var(--ease-out);\n      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);\n    }\n    \n    button::before {\n      content: \"\";\n      position: absolute;\n      top: 0; left: 0; width: 100%; height: 100%;\n      background: linear-gradient(rgba(255,255,255,0.1), transparent);\n      opacity: 0;\n      transition: opacity 0.3s;\n    }\n\n    button:hover {\n      transform: translateY(-2px);\n      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);\n    }\n    \n    button:hover::before { opacity: 1; }\n    \n    button:active { transform: translateY(0); }\n\n    .card:nth-child(2) button {\n      background: linear-gradient(135deg, var(--accent), #0891b2);\n      box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);\n    }\n    .card:nth-child(2) button:hover {\n      box-shadow: 0 8px 20px rgba(8, 145, 178, 0.4);\n    }\n\n    .footer {\n      margin-top: 16px;\n      text-align: center;\n      font-size: 12px;\n      font-family: monospace; /* Keep English for paths */\n      direction: ltr; /* Paths should be LTR */\n      color: var(--text-muted);\n      opacity: 0.6;\n    }\n\n    /* Toast Notification */\n    .toast-container {\n      position: fixed;\n      bottom: 32px;\n      left: 50%;\n      transform: translateX(-50%);\n      z-index: 100;\n      display: flex;\n      flex-direction: column;\n      gap: 10px;\n      pointer-events: none;\n    }\n\n    .toast {\n      background: #1e293b;\n      color: white;\n      padding: 12px 20px;\n      border-radius: 99px;\n      box-shadow: 0 10px 40px rgba(0,0,0,0.5);\n      border: 1px solid rgba(255,255,255,0.1);\n      font-size: 14px;\n      font-weight: 500;\n      display: flex;\n      align-items: center;\n      gap: 12px;\n      opacity: 0;\n      transform: translateY(20px);\n      transition: all 0.4s var(--ease-out);\n    }\n    \n    .toast.show { opacity: 1; transform: translateY(0); }\n    \n    .toast-icon {\n      width: 20px; height: 20px;\n      background: var(--success);\n      border-radius: 50%;\n      display: flex; \n      align-items: center; justify-content: center;\n      color: black;\n      font-size: 12px;\n    }\n\n    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }\n\n    /* Mobile */\n    @media (max-width: 600px) {\n      .input-row { grid-template-columns: 1fr; gap: 12px; }\n      .layout { grid-template-columns: 1fr; }\n    }\n  </style>\n</head>\n<body>\n\n  <div class=\"header\">\n    <h1>کنسول مدیریت بازخورد</h1>\n    <p>مدیریت جریان سفارشات و حالت کیوسک به صورت امن و سریع.</p>\n  </div>\n\n  <div class=\"layout\">\n    \n    <!-- CARD 1: Close Order -->\n    <div class=\"card\">\n      <div class=\"pill\">عملیات الزامی</div>\n      <h2>بستن سفارش (Close Order)</h2>\n      <p class=\"desc\">اطلاعات را برای پایان نشست مشتری وارد کنید. وارد کردن حداقل یکی از شناسه‌ها الزامی است.</p>\n      \n      <form id=\"close-form\">\n        <div class=\"input-row\">\n          <div class=\"input-group\">\n            <label>شناسه میز (Table ID)</label>\n            <div class=\"input-wrapper\">\n              <input name=\"table_id\" placeholder=\"مثلاً: T-12\" />\n              <!-- SVG Icon Table -->\n              <svg class=\"input-icon\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z\" />\n              </svg>\n            </div>\n          </div>\n          <div class=\"input-group\">\n            <label>شناسه سفارش (Order ID)</label>\n            <div class=\"input-wrapper\">\n              <input name=\"order_id\" placeholder=\"مثلاً: ORD-456\" />\n              <!-- SVG Icon Hash -->\n              <svg class=\"input-icon\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M7 20l4-16m2 16l4-16M6 9h14M4 15h14\" />\n              </svg>\n            </div>\n          </div>\n        </div>\n        \n        <label class=\"toggle-container\">\n          <input type=\"checkbox\" name=\"feedback_opt_out\">\n          <div class=\"toggle-switch\"><div class=\"toggle-knob\"></div></div>\n          <span class=\"toggle-label\">عدم ارسال درخواست فیدبک</span>\n        </label>\n        \n        <button type=\"submit\">بستن سفارش</button>\n        <div class=\"footer\">POST /close-order-simple</div>\n      </form>\n    </div>\n\n    <!-- CARD 2: Activate Feedback -->\n    <div class=\"card\">\n      <div class=\"pill\">حالت دستگاه</div>\n      <h2>فعال‌سازی کیوسک</h2>\n      <p class=\"desc\">راه‌اندازی نقطه جمع‌آوری نظرات و بازخورد برای یک میز مشخص.</p>\n      \n      <form id=\"activate-form\">\n        <div class=\"input-row\">\n          <div class=\"input-group\">\n            <label>شناسه میز (Table ID)</label>\n            <div class=\"input-wrapper\">\n              <input name=\"table_id\" placeholder=\"مثلاً: T-12\" />\n              <svg class=\"input-icon\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z\" />\n              </svg>\n            </div>\n          </div>\n          <div class=\"input-group\">\n            <label>شناسه سفارش (Order ID)</label>\n            <div class=\"input-wrapper\">\n              <input name=\"order_id\" placeholder=\"مثلاً: ORD-456\" />\n              <svg class=\"input-icon\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M7 20l4-16m2 16l4-16M6 9h14M4 15h14\" />\n              </svg>\n            </div>\n          </div>\n        </div>\n        \n        <div style=\"font-size:13px; color:var(--text-muted); margin-bottom:24px; display:flex; gap:6px; align-items:center;\">\n          <svg style=\"width:16px;\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" /></svg>\n          حالت کیوسک بلافاصله فعال می‌شود.\n        </div>\n        \n        <button type=\"submit\">فعال‌سازی بازخورد</button>\n        <div class=\"footer\">POST /activate-feedback</div>\n      </form>\n    </div>\n  </div>\n\n  <div class=\"toast-container\" id=\"toast-area\"></div>\n\n  <script>\n    // Toast Notification System\n    function showToast(message, type = 'success') {\n      const container = document.getElementById('toast-area');\n      const toast = document.createElement('div');\n      toast.className = 'toast';\n      toast.innerHTML = \\`\n        <div class=\"toast-icon\">\n          <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"></polyline></svg>\n        </div>\n        <span>${message}</span>\n      \\`;\n      \n      container.appendChild(toast);\n      \n      // Trigger animation\n      requestAnimationFrame(() => toast.classList.add('show'));\n\n      // Remove after delay\n      setTimeout(() => {\n        toast.classList.remove('show');\n        setTimeout(() => toast.remove(), 400);\n      }, 3000);\n    }\n\n    // Form Handlers\n    const getBasePath = () => {\n      const path = window.location.pathname || '';\n      if (path.includes('/webhook-test/')) return '/webhook-test';\n      if (path.includes('/webhook/')) return '/webhook';\n      return '';\n    };\n\n    const safeJson = async (res) => {\n      try { return await res.json(); } catch (e) { return {}; }\n    };\n\n    const setLoading = (btn, text, isLoading) => {\n      if (!btn) return;\n      btn.disabled = isLoading;\n      btn.style.opacity = isLoading ? '0.7' : '1';\n      if (text) btn.innerText = text;\n    };\n\n    const formatTarget = (data) => {\n      if (!data) return '';\n      if (data.order_id && data.table_id) return 'Order ' + data.order_id + ' / Table ' + data.table_id;\n      if (data.order_id) return 'Order ' + data.order_id;\n      if (data.table_id) return 'Table ' + data.table_id;\n      return '';\n    };\n\n    const postForm = async (endpoint, payload) => {\n      const base = getBasePath();\n      const res = await fetch(base + endpoint, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(payload)\n      });\n      const data = await safeJson(res);\n      if (!res.ok || data.ok === false) {\n        const msg = data.error || data.message || 'Error sending request.';\n        showToast(msg);\n        return { ok: false, data };\n      }\n      if (data.warning_unpaid) {\n        showToast('Warning: this order is unpaid.');\n      }\n      return { ok: true, data };\n    };\n\n    document.getElementById('close-form').addEventListener('submit', async (e) => {\n      e.preventDefault();\n      const form = e.target;\n      const btn = form.querySelector('button');\n      const originalText = btn.innerText;\n\n      const tableId = (form.table_id.value || '').trim();\n      const orderId = (form.order_id.value || '').trim();\n      if (!tableId && !orderId) {\n        showToast('Please provide order ID or table ID.');\n        return;\n      }\n\n      setLoading(btn, 'Closing order...', true);\n      try {\n        const payload = {\n          table_id: tableId || null,\n          order_id: orderId || null,\n          feedback_opt_out: !!form.feedback_opt_out.checked\n        };\n        const result = await postForm('/close-order-simple', payload);\n        if (result.ok) {\n          const target = formatTarget(result.data);\n          showToast(result.data.message || (target ? 'Order ?Table ??: ' + target : 'Order ?? ?Order ?Table ??!'));\n          form.reset();\n        }\n      } catch (err) {\n        showToast('Network error. Please try again.');\n      } finally {\n        setLoading(btn, originalText, false);\n      }\n    });\n\n    document.getElementById('activate-form').addEventListener('submit', async (e) => {\n      e.preventDefault();\n      const form = e.target;\n      const btn = form.querySelector('button');\n      const originalText = btn.innerText;\n\n      const tableId = (form.table_id.value || '').trim();\n      const orderId = (form.order_id.value || '').trim();\n      if (!tableId && !orderId) {\n        showToast('Please provide order ID or table ID.');\n        return;\n      }\n\n      setLoading(btn, 'Activating kiosk...', true);\n      try {\n        const payload = {\n          table_id: tableId || null,\n          order_id: orderId || null\n        };\n        const result = await postForm('/activate-feedback', payload);\n        if (result.ok) {\n          const target = formatTarget(result.data);\n          const msg = result.data.message || (result.data.already_completed ? 'Feedback already submitted for this order.' : 'Feedback kiosk activated!');\n          showToast(target ? msg + ' (' + target + ')' : msg);\n          if (!result.data.already_completed) {\n            form.reset();\n          }\n        }\n      } catch (err) {\n        showToast('Network error. Please try again.');\n      } finally {\n        setLoading(btn, originalText, false);\n      }\n    });\n  </script>\n</body>\n</html>\n`;\nreturn [{ json: {}, binary: {}, pairedItem: { item: 0 }, headers: { 'Content-Type': 'text/html; charset=UTF-8' }, body: html }];"
+      },
+      "id": "46f8c4d0-7c0c-4d60-b0f8-5891af55f7f2",
+      "name": "Render Activate Form",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "188438d2-5c41-4fda-9e7c-a08effb06bf1",
+      "name": "Return Activate Form HTML",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const b = $json || {};\nlet table_id = (b.table_id||'').trim();\nlet order_id = (b.order_id||'').trim();\nconst mode = 'kiosk_only';\nif (order_id) table_id = null;\nif (!table_id && !order_id) {\n  return [{ json: { ok: false, error: 'At least one of table_id or order_id is required.' } }];\n}\nreturn [{ json: { ok: true, table_id: table_id||null, order_id: order_id||null, mode } }];"
+      },
+      "id": "7bf96428-2d1f-49b3-8ef2-f59d9c88e252",
+      "name": "Validate Activate Input",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok === true}}"
+            }
+          ]
+        }
+      },
+      "id": "51436dd7-9b7d-4348-9bcd-3227b02d849d",
+      "name": "Activate Input OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "d38a5925-e8cf-4ecd-ad77-998e591b7364",
+      "name": "Return Activate Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -464
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.SUPABASE_URL + '/rest/v1/orders?order_id=eq.' + encodeURIComponent($json.order_id || '') + '&select=*'}}",
+        "responseFormat": "json",
+        "sendHeaders": true,
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "options": {
+          "splitIntoItems": true
+        }
+      },
+      "id": "21c52746-f5c3-4f9f-bae2-1d17b9b60bba",
+      "name": "Read Order by ID (Activate)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -480,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{(() => { const since = new Date(Date.now() - 12*60*60*1000).toISOString(); return $env.SUPABASE_URL + '/rest/v1/orders?table_id=eq.' + encodeURIComponent($json.table_id || '') + '&created_at=gte.' + encodeURIComponent(since) + '&order=created_at.desc&limit=1&select=*'; })()}}",
+        "responseFormat": "json",
+        "sendHeaders": true,
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "options": {
+          "splitIntoItems": true
+        }
+      },
+      "id": "53b53ee7-f60c-4c2b-b929-0c0b9b8999f4",
+      "name": "Read Orders (Table) Activate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -480,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const toTime = (v) => Date.parse(v || '') || 0;\nconst sorted = items.slice().sort((a,b)=> toTime(b.json.created_at) - toTime(a.json.created_at));\nif (sorted.length === 0) return [];\nconst preferred = sorted.find(r => {\n  const status = String(r.json.order_status || r.json.status || '').toUpperCase();\n  const closedAt = r.json.closed_at;\n  return (status === 'OPEN' || status === 'SENT') && !closedAt;\n});\nreturn [{ json: (preferred ? preferred.json : sorted[0].json) }];"
+      },
+      "id": "54a69158-9a3b-4c3e-9cf4-9406d0e63a0b",
+      "name": "Filter Latest Open (Activate)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "passThrough",
+        "options": {}
+      },
+      "id": "2042817f-110f-4d02-adf7-4f3a837b3dde",
+      "name": "Merge Order (Activate)",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "if (!items || items.length === 0 || !items[0].json.order_id) {\n  return [{ json: { ok: false, error: 'No order found for this table/order.' } }];\n}\nreturn items.map(i => ({ json: { ...i.json, ok: true } }));"
+      },
+      "id": "c10dd5bc-bc74-4cfa-80af-6d17a688b763",
+      "name": "Validate Order Found (Activate)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.ok === true}}"
+            }
+          ]
+        }
+      },
+      "id": "31950073-c7de-43b9-859b-b9e5654fd833",
+      "name": "Activate Order Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        368,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 404
+        }
+      },
+      "id": "3dae2a73-7ac5-4529-8c23-7f17821896dd",
+      "name": "Return Activate Not Found",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        576,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const now = new Date().toISOString();\nreturn items.map(i=>{\n  const status = String(i.json.order_status || i.json.status || '').toUpperCase();\n  const closedAt = i.json.closed_at;\n  const shouldClose = (status === 'OPEN' || status === 'SENT') && !closedAt;\n  if (shouldClose) {\n    return { json: { ...i.json, order_status: 'CLOSED', status: 'CLOSED', closed_at: now, shouldUpdateStatus: true } };\n  }\n  return { json: { ...i.json, shouldUpdateStatus: false } };\n});"
+      },
+      "id": "0af9455f-5626-4ed0-b9e2-384bc6b75f37",
+      "name": "Close If Open",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        576,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{$env.SUPABASE_URL + '/rest/v1/orders?order_id=eq.' + encodeURIComponent($json.order_id || '')}}",
+        "responseFormat": "json",
+        "sendHeaders": true,
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "options": {
+          "splitIntoItems": true
+        },
+        "jsonParameters": true,
+        "bodyParametersJson": "={{JSON.stringify({ order_status: $json.order_status, status: $json.status, closed_at: $json.closed_at })}}"
+      },
+      "id": "d34f87eb-0f90-4795-9fb9-8357573a5552",
+      "name": "Update Order Status (Activate)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        784,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return items;"
+      },
+      "id": "2591cfa1-8232-48ee-917d-93180238e6c7",
+      "name": "Pass Closed Order",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const order = $json;\nlet tokenObj = null;\nif (order.token_info) {\n  if (typeof order.token_info === 'string') {\n    try { tokenObj = JSON.parse(order.token_info); } catch (e) { tokenObj = null; }\n  } else if (typeof order.token_info === 'object') {\n    tokenObj = order.token_info;\n  }\n}\nreturn [{ json: { ...order, tokenObj } }];"
+      },
+      "id": "179f7f7f-cc9b-46ce-8833-5714e8871a88",
+      "name": "Parse Token Info",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const crypto = require('crypto');\nconst order = $json;\nconst now = Date.now();\nconst orderId = order.order_id || null;\nconst tableId = order.table_id || null;\nlet tokenObj = order.tokenObj && typeof order.tokenObj === 'object' ? order.tokenObj : null;\nconst isValid = (t) => {\n  if (!t || typeof t !== 'object') return false;\n  if (!t.token || !t.expires_at) return false;\n  const exp = Date.parse(t.expires_at);\n  if (!exp || exp <= now) return false;\n  if (t.is_used === true) return false;\n  if (orderId && String(t.order_id || '') !== String(orderId)) return false;\n  if (tableId && String(t.table_id || '') !== String(tableId)) return false;\n  return true;\n};\nif (!isValid(tokenObj)) {\n  tokenObj = {\n    token: crypto.randomBytes(24).toString('base64url'),\n    expires_at: new Date(now + 24*60*60*1000).toISOString(),\n    is_used: false,\n    order_id: orderId,\n    table_id: tableId\n  };\n}\nconst tokenPayload = (typeof order.token_info === 'string') ? JSON.stringify(tokenObj) : tokenObj;\nreturn [{ json: { ...order, tokenObj, token_info: tokenPayload } }];"
+      },
+      "id": "2404eb51-0e73-4568-8fba-b3e339be3c67",
+      "name": "Generate Token If Needed",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{$env.SUPABASE_URL + '/rest/v1/orders?order_id=eq.' + encodeURIComponent($json.order_id || '')}}",
+        "responseFormat": "json",
+        "sendHeaders": true,
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "options": {
+          "splitIntoItems": true
+        },
+        "jsonParameters": true,
+        "bodyParametersJson": "={{JSON.stringify({ token_info: $json.token_info })}}"
+      },
+      "id": "956a7670-8979-41cb-a62f-069bc47289fe",
+      "name": "Update Token Info",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1664,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const order = $json;\nconst input = $items('Validate Activate Input',0,0).json;\nconst tokenObj = $items('Generate Token If Needed',0,0).json.tokenObj;\nreturn [{ json: { ...order, tokenObj, mode: input.mode, kiosk_activated: false, kiosk_device_id: null } }];"
+      },
+      "id": "771a1bfc-1d62-4e78-892d-14f9b2449c83",
+      "name": "Build Notify Context",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{['kiosk_only','both'].includes($json.mode)}}"
+            }
+          ]
+        }
+      },
+      "id": "4e58e4f4-d418-420c-8f9f-3e9e4e606301",
+      "name": "Use Kiosk?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        2544,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const d = $json;\nconst device = d.kiosk_device || null;\nconst activated = !!device;\nconst kioskDeviceId = device && device.device_id ? device.device_id : 'KIOSK_MAIN';\nreturn [{ json: { ...d, kiosk_activated: activated, kiosk_device_id: activated ? kioskDeviceId : null, device_status: device ? device.status : null } }];"
+      },
+      "id": "02c2fdc9-5201-4015-9bdb-d590260110b7",
+      "name": "Flag Kiosk Activated",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2768,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return items.map(i=>({ json: { ...i.json, kiosk_activated: false, kiosk_device_id: null } }));"
+      },
+      "id": "49e59ee6-de79-4171-8989-169800e32a30",
+      "name": "Skip Kiosk Activation",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2768,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const d = $json;\nconst status = d.order_status || d.status || null;\nconst unpaid = String(d.payment_status || '').toUpperCase() === 'UNPAID';\nconst res = {\n  ok: true,\n  order_id: d.order_id || null,\n  table_id: d.table_id || null,\n  status,\n  already_completed: false,\n  warning_unpaid: unpaid,\n  message: d.kiosk_activated === true ? 'Feedback kiosk activated.' : 'Feedback activation completed.',\n  feedback: {\n    mode: d.mode,\n    token: d.tokenObj && d.tokenObj.token ? d.tokenObj.token : null,\n    kiosk_device_id: d.kiosk_activated === true ? (d.kiosk_device_id || 'KIOSK_MAIN') : null,\n    kiosk_activated: d.kiosk_activated === true\n  }\n};\nreturn [{ json: res }];"
+      },
+      "id": "615bad04-fc92-4094-9d06-3b919c76c148",
+      "name": "Build Final Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2992,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "1ede180d-f4bb-48ac-9f08-f75b05ca6e87",
+      "name": "Return Activate Result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        3184,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.shouldUpdateStatus === true}}"
+            }
+          ]
+        }
+      },
+      "id": "7f14e5dd-3d28-4b67-9f48-d13f6cb17d39",
+      "name": "Should Update Status?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        704,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.SUPABASE_URL + '/rest/v1/feedback?order_id=eq.' + encodeURIComponent($json.order_id || '') + '&select=feedback_id&limit=1'}}",
+        "responseFormat": "json",
+        "sendHeaders": true,
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "options": {
+          "splitIntoItems": false
+        }
+      },
+      "id": "e831bbd1-066f-4a9e-b46b-0c8d351143dc",
+      "name": "Check Feedback Exists",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1160,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const order = $items('Pass Closed Order',0,0).json;\nconst data = $json;\nconst feedbackExists = Array.isArray(data) ? data.length > 0 : false;\nconst hasFeedback = order.has_feedback === true || String(order.has_feedback || '').toLowerCase() === 'true';\nreturn [{ json: { ...order, feedback_exists: feedbackExists, has_feedback: hasFeedback } }];"
+      },
+      "id": "4e07d588-d876-411c-8f92-cee6c8fd46b1",
+      "name": "Merge Feedback Status",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.has_feedback === true || $json.feedback_exists === true}}"
+            }
+          ]
+        }
+      },
+      "id": "d24c239d-47ea-4107-ae24-7bd9a1329a9c",
+      "name": "Already Completed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const d = $json;\nconst unpaid = String(d.payment_status || '').toUpperCase() === 'UNPAID';\nconst status = d.order_status || d.status || null;\nreturn [{ json: {\n  ok: true,\n  already_completed: true,\n  kiosk_activated: false,\n  order_id: d.order_id || null,\n  table_id: d.table_id || null,\n  status,\n  warning_unpaid: unpaid,\n  message: 'Feedback already submitted for this order.'\n} }];"
+      },
+      "id": "1284277b-7261-4643-8399-b85f71f079de",
+      "name": "Build Already Completed Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        1712,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{$env.SUPABASE_URL + '/rest/v1/devices?device_id=eq.KIOSK_MAIN'}}",
+        "responseFormat": "json",
+        "sendHeaders": true,
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "jsonParameters": true,
+        "bodyParametersJson": "={{JSON.stringify({ status: 'active', active_order_id: $json.order_id, assigned_table_id: $json.table_id, active_token: ($json.tokenObj && $json.tokenObj.token) ? $json.tokenObj.token : null, last_updated: new Date().toISOString() })}}",
+        "options": {
+          "splitIntoItems": false
+        }
+      },
+      "id": "1216b812-f563-410b-9433-df5450f645e0",
+      "name": "Update Kiosk State",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2680,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{!!($json.order_id && String($json.order_id).trim() !== '')}}"
+            }
+          ]
+        }
+      },
+      "id": "fc1f16be-2400-4015-9d6b-8c577cab3ab4",
+      "name": "Has Order ID (Simple)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        -928
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return [];"
+      },
+      "id": "4f952f59-866c-44d8-ad99-c1782049bd70",
+      "name": "No Order ID Result (Simple)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -1008
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{!!($json.table_id && String($json.table_id).trim() !== '')}}"
+            }
+          ]
+        }
+      },
+      "id": "9f515b5a-4984-4f91-8174-e2970485485e",
+      "name": "Has Table ID (Simple)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        -704
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return [];"
+      },
+      "id": "a600b5b4-46af-4073-a3e6-b26acad6de56",
+      "name": "No Table ID Result (Simple)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -576
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{!!($json.order_id && String($json.order_id).trim() !== '')}}"
+            }
+          ]
+        }
+      },
+      "id": "684a6ffb-95ec-473f-92ac-77e68ed87423",
+      "name": "Has Order ID (Activate)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return [];"
+      },
+      "id": "debae44c-ed02-46b9-a4aa-07266dc7b7cc",
+      "name": "No Order ID Result (Activate)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{!!($json.table_id && String($json.table_id).trim() !== '')}}"
+            }
+          ]
+        }
+      },
+      "id": "aa3afd58-06e3-4eea-9153-53a0a3ea49d7",
+      "name": "Has Table ID (Activate)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return [];"
+      },
+      "id": "1e1ed0e2-505b-4c63-9fcd-18a834bc0d85",
+      "name": "No Table ID Result (Activate)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $items('Validate Simple Input',0,0).json;\nreturn items.map(i=>({ json: {\n  ...i.json,\n  feedback_opt_out: input.feedback_opt_out === true,\n  already_closed: true,\n  update_payload: { feedback_opt_out: input.feedback_opt_out === true }\n} }));"
+      },
+      "id": "8f433f7c-3bff-42c7-9923-33ee0322d716",
+      "name": "Prepare Close (Already Closed)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        784,
+        -768
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const updated = $json || {};\nconst prepOpen = ($items('Prepare Close (Simple)',0,0) || [])[0]?.json;\nconst prepClosed = ($items('Prepare Close (Already Closed)',0,0) || [])[0]?.json;\nconst ctx = prepOpen || prepClosed || {};\nconst status = updated.order_status || updated.status || ctx.order_status || ctx.status || 'CLOSED';\nconst message = ctx.already_closed ? 'Order already closed. Feedback preference updated.' : 'Order closed successfully.';\nreturn [{ json: {\n  ok: true,\n  order_id: updated.order_id || ctx.order_id || null,\n  table_id: updated.table_id || ctx.table_id || null,\n  status,\n  message\n} }];"
+      },
+      "id": "ff625aaa-1766-4d1d-a73b-cf0493e38282",
+      "name": "Build Close Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const order = $items('Build Notify Context',0,0).json;\nconst raw = items && items[0] ? items[0].json : null;\nconst arr = Array.isArray(raw) ? raw : [];\nconst device = arr[0] || null;\nconst ok = !!device;\nreturn [{ json: { ...order, kiosk_update_ok: ok, kiosk_device: device } }];"
+      },
+      "id": "1a309f87-4010-4fd0-a8a4-cc7b577b9024",
+      "name": "Validate Kiosk Update",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        2864,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.kiosk_update_ok === true}}"
+            }
+          ]
+        }
+      },
+      "id": "4f5a16ed-1146-4b36-850e-0f7564e5b642",
+      "name": "Kiosk Updated?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3040,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const d = $json;\nreturn [{ json: {\n  ok: false,\n  order_id: d.order_id || null,\n  table_id: d.table_id || null,\n  status: d.order_status || d.status || null,\n  message: 'Missing devices row KIOSK_MAIN. Run migration to insert it.',\n  error: 'Missing devices row KIOSK_MAIN. Run migration to insert it.'\n} }];"
+      },
+      "id": "5a0a4038-0d6c-4375-8e5c-4e1430462a33",
+      "name": "Build Kiosk Missing Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        3248,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "d4f0a6a4-2b1a-4a5f-8b3b-1d5acb0c4f2e",
+      "name": "Return Activate Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        3488,
+        -16
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Close Order Simple Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Render Close Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Close Form": {
+      "main": [
+        [
+          {
+            "node": "Return Close Form HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Close Order Simple Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Simple Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Close Form HTML": {
+      "main": []
+    },
+    "Validate Simple Input": {
+      "main": [
+        [
+          {
+            "node": "Simple Input OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Input OK?": {
+      "main": [
+        [
+          {
+            "node": "Has Order ID (Simple)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Has Table ID (Simple)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Simple Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Order by ID (Simple)": {
+      "main": [
+        [
+          {
+            "node": "Merge Order (Simple)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Orders (Table) Simple": {
+      "main": [
+        [
+          {
+            "node": "Filter Latest Open (Simple)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Latest Open (Simple)": {
+      "main": [
+        [
+          {
+            "node": "Merge Order (Simple)",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Order (Simple)": {
+      "main": [
+        [
+          {
+            "node": "Validate Order Found (Simple)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Order Found (Simple)": {
+      "main": [
+        [
+          {
+            "node": "Simple Order Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Order Found?": {
+      "main": [
+        [
+          {
+            "node": "Check Already Closed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Simple Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Already Closed": {
+      "main": [
+        [
+          {
+            "node": "Prepare Close (Already Closed)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Close (Simple)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Close (Simple)": {
+      "main": [
+        [
+          {
+            "node": "Update Order (Simple)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Order (Simple)": {
+      "main": [
+        [
+          {
+            "node": "Build Close Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activate Feedback Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Activate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activate Feedback Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Render Activate Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Activate Form": {
+      "main": [
+        [
+          {
+            "node": "Return Activate Form HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Activate Form HTML": {
+      "main": []
+    },
+    "Validate Activate Input": {
+      "main": [
+        [
+          {
+            "node": "Activate Input OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activate Input OK?": {
+      "main": [
+        [
+          {
+            "node": "Has Order ID (Activate)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Has Table ID (Activate)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Activate Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Order by ID (Activate)": {
+      "main": [
+        [
+          {
+            "node": "Merge Order (Activate)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Orders (Table) Activate": {
+      "main": [
+        [
+          {
+            "node": "Filter Latest Open (Activate)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Latest Open (Activate)": {
+      "main": [
+        [
+          {
+            "node": "Merge Order (Activate)",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Order (Activate)": {
+      "main": [
+        [
+          {
+            "node": "Validate Order Found (Activate)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Order Found (Activate)": {
+      "main": [
+        [
+          {
+            "node": "Activate Order Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activate Order Found?": {
+      "main": [
+        [
+          {
+            "node": "Close If Open",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Activate Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Close If Open": {
+      "main": [
+        [
+          {
+            "node": "Should Update Status?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Order Status (Activate)": {
+      "main": [
+        [
+          {
+            "node": "Pass Closed Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass Closed Order": {
+      "main": [
+        [
+          {
+            "node": "Check Feedback Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Token Info": {
+      "main": [
+        [
+          {
+            "node": "Generate Token If Needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Token If Needed": {
+      "main": [
+        [
+          {
+            "node": "Update Token Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Token Info": {
+      "main": [
+        [
+          {
+            "node": "Build Notify Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Notify Context": {
+      "main": [
+        [
+          {
+            "node": "Use Kiosk?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Use Kiosk?": {
+      "main": [
+        [
+          {
+            "node": "Update Kiosk State",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Kiosk Activation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flag Kiosk Activated": {
+      "main": [
+        [
+          {
+            "node": "Build Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Final Response": {
+      "main": [
+        [
+          {
+            "node": "Return Activate Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Update Status?": {
+      "main": [
+        [
+          {
+            "node": "Update Order Status (Activate)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pass Closed Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip Kiosk Activation": {
+      "main": [
+        [
+          {
+            "node": "Build Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Feedback Exists": {
+      "main": [
+        [
+          {
+            "node": "Merge Feedback Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Feedback Status": {
+      "main": [
+        [
+          {
+            "node": "Already Completed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Completed?": {
+      "main": [
+        [
+          {
+            "node": "Build Already Completed Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse Token Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Already Completed Response": {
+      "main": [
+        [
+          {
+            "node": "Return Activate Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Kiosk State": {
+      "main": [
+        [
+          {
+            "node": "Validate Kiosk Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Order ID (Simple)": {
+      "main": [
+        [
+          {
+            "node": "Read Order by ID (Simple)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Order ID Result (Simple)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Order ID Result (Simple)": {
+      "main": [
+        [
+          {
+            "node": "Merge Order (Simple)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Table ID (Simple)": {
+      "main": [
+        [
+          {
+            "node": "Read Orders (Table) Simple",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Table ID Result (Simple)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Table ID Result (Simple)": {
+      "main": [
+        [
+          {
+            "node": "Merge Order (Simple)",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Has Order ID (Activate)": {
+      "main": [
+        [
+          {
+            "node": "Read Order by ID (Activate)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Order ID Result (Activate)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Order ID Result (Activate)": {
+      "main": [
+        [
+          {
+            "node": "Merge Order (Activate)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Table ID (Activate)": {
+      "main": [
+        [
+          {
+            "node": "Read Orders (Table) Activate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Table ID Result (Activate)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Table ID Result (Activate)": {
+      "main": [
+        [
+          {
+            "node": "Merge Order (Activate)",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Prepare Close (Already Closed)": {
+      "main": [
+        [
+          {
+            "node": "Update Order (Simple)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Close Response": {
+      "main": [
+        [
+          {
+            "node": "Return Close Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Kiosk Update": {
+      "main": [
+        [
+          {
+            "node": "Kiosk Updated?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kiosk Updated?": {
+      "main": [
+        [
+          {
+            "node": "Flag Kiosk Activated",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Kiosk Missing Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Kiosk Missing Response": {
+      "main": [
+        [
+          {
+            "node": "Return Activate Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "815ee1de-5023-43a2-a2b7-a366f94dc7de",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6cf7263854cc3e6b96684131a28dfb69a464e83277a7241a6ad3b3b46b862ceb"
+  },
+  "id": "4iX4IFsE0ARzDRHZ",
+  "tags": []
+}

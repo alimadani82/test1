@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart CRM Console</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600&display=swap");
+
+    :root {
+      --bg-dark: #050511;
+      --glass-panel: rgba(20, 25, 40, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-highlight: rgba(255, 255, 255, 0.03);
+      
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.4);
+      --accent: #06b6d4;
+      --accent-glow: rgba(6, 182, 212, 0.4);
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --success: #10b981;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+      
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      
+      --shadow-card: 0 20px 40px -10px rgba(0,0,0,0.5);
+    }
+
+    * { box-sizing: border-box; outline: none; }
+    
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Vazirmatn", "Segoe UI", sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 10%, rgba(6, 182, 212, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 50% 120%, rgba(168, 85, 247, 0.2) 0%, transparent 50%);
+      color: var(--text-main);
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      position: relative;
+    }
+
+    /* --- Typography --- */
+    h1 { margin: 0; font-weight: 800; font-size: 32px; letter-spacing: -0.5px; background: linear-gradient(135deg, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    h3 { margin: 0 0 4px 0; font-size: 20px; font-weight: 700; color: var(--text-main); }
+    p.subtitle { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+    
+    /* --- Layout Components --- */
+    .glass-card {
+      background: var(--glass-panel);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--shadow-card);
+      transition: transform 0.3s ease;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+      padding-bottom: 10px;
+    }
+    
+    .config-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: rgba(0,0,0,0.2);
+      padding: 8px 8px 8px 20px;
+      border-radius: 99px;
+      border: 1px solid var(--glass-border);
+      flex: 1;
+      max-width: 500px;
+    }
+    .config-bar input {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 13px;
+      font-family: 'Space Grotesk', sans-serif;
+      width: 100%;
+      opacity: 0.8;
+    }
+    .config-bar input:focus { opacity: 1; }
+
+    /* --- Tabs --- */
+    .tabs-wrapper {
+      background: rgba(0,0,0,0.2);
+      padding: 6px;
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      position: relative;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 14px;
+      border-radius: 14px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      z-index: 2;
+    }
+    .tab-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.03); }
+    .tab-btn.active { color: #fff; background: linear-gradient(135deg, var(--primary), var(--accent)); box-shadow: 0 4px 15px var(--primary-glow); }
+
+    /* --- Form Elements --- */
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-top: 24px; }
+    .input-group { position: relative; }
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input {
+      width: 100%;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      color: var(--text-main);
+      font-size: 15px;
+      transition: all 0.2s;
+      font-family: "Vazirmatn", sans-serif;
+    }
+    .input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+      background: rgba(0,0,0,0.3);
+    }
+    
+    /* --- Buttons --- */
+    .actions { margin-top: 32px; display: flex; gap: 16px; }
+    .btn {
+      border: none;
+      padding: 14px 32px;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #4f46e5);
+      color: white;
+      box-shadow: 0 8px 20px -6px var(--primary-glow);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px var(--primary-glow); }
+    .btn-primary:active { transform: translateY(0); }
+    
+    .btn-ghost {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-main);
+      border: 1px solid transparent;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.1); }
+
+    /* --- Results & Metrics --- */
+    .debug-area { margin-top: 24px; animation: fadeIn 0.4s ease; }
+    .result-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .result-header {
+      padding: 20px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pill {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent);
+      padding: 6px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1px;
+      background: var(--glass-border); /* borders via gap */
+    }
+    .metric-item {
+      background: #0d1120; /* Darker than card */
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .metric-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-value { font-size: 18px; font-weight: 700; color: var(--text-main); font-family: 'Space Grotesk', sans-serif; }
+
+    /* --- Json Viewer --- */
+    details { margin-top: 16px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--glass-border); }
+    summary { padding: 12px 16px; background: rgba(0,0,0,0.2); cursor: pointer; font-size: 13px; font-weight: 600; user-select: none; }
+    summary:hover { background: rgba(0,0,0,0.3); }
+    pre { margin: 0; padding: 16px; background: #080b14; color: #a5b4fc; font-family: 'Space Mono', monospace; font-size: 12px; overflow-x: auto; line-height: 1.5; }
+
+    /* --- Toast Notification --- */
+    .toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 100; pointer-events: none; }
+    .toast {
+      background: #1e293b;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 99px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { border-color: var(--success); }
+    .toast.error { border-color: var(--danger); }
+    .toast-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* --- Utilities --- */
+    .hidden { display: none; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .anim-fade { animation: fadeIn 0.4s ease backwards; }
+    
+    /* Mobile */
+    @media (max-width: 600px) {
+      .tabs-wrapper { overflow-x: auto; display: flex; }
+      .tab-btn { flex: 1; white-space: nowrap; }
+      header { flex-direction: column; align-items: stretch; }
+      h1 { font-size: 26px; text-align: center; }
+      .actions { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast-container"><div id="toast" class="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div></div>
+
+  <div class="container">
+    <header>
+      <div>
+        <h1>Smart CRM Console</h1>
+        <p class="subtitle" style="margin-top:4px;">پنل مدیریت وبهوک /crm-smart-form</p>
+      </div>
+      <div class="config-bar">
+        <span style="opacity:0.5; font-size:18px;">🔗</span>
+        <input id="baseUrl" placeholder="https://your-n8n-host/webhook/crm-smart-form">
+        <button id="fillDemo" class="btn-ghost" style="padding: 6px 12px; border-radius: 8px; font-size: 12px;">Demo</button>
+      </div>
+    </header>
+
+    <nav class="tabs-wrapper">
+      <button class="tab-btn active" data-tab="search">جستجو</button>
+      <button class="tab-btn" data-tab="create">ساخت CRM</button>
+      <button class="tab-btn" data-tab="ghost">ساخت Ghost</button>
+      <button class="tab-btn" data-tab="insight">اینسایت</button>
+    </nav>
+
+    <!-- SEARCH TAB -->
+    <main id="search" class="glass-card tab-panel anim-fade">
+      <div class="header-section">
+        <h3>جستجو</h3>
+        <p class="subtitle">یافتن مشتری بر اساس نام یا شماره تماس</p>
+      </div>
+      <div class="form-grid">
+        <div class="input-group">
+          <label>عبارت جستجو</label>
+          <div class="input-wrapper">
+            <input class="input" id="search-query" placeholder="مثال: 09123456789 یا علی رضایی">
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="btn-search" class="btn btn-primary">
+          <span>🔍</span> جستجو
+        </button>
+        <button id="btn-search-reset" class="btn btn-ghost">پاک کردن</button>
+      </div>
+      <div id="search-result" class="debug-area"></div>
+    </main>
+
+    <!-- CREATE TAB -->
+    <main id="create" class="glass-card tab-panel hidden anim-fade">
+      <div class="header-section">
+        <h3>ساخت CRM</h3>
+        <p class="subtitle">ثبت رکورد جدید در دیتابیس CRM</p>
+      </div>
+      <div class="form-grid">
+        <div class="input-group">
+          <label>نام کامل</label>
+          <input class="input" id="crm-name" placeholder="نام مشتری">
+        </div>
+        <div class="input-group">
+          <label>شماره موبایل</label>
+          <input class="input" id="crm-phone" placeholder="09xxxxxxxxx">
+        </div>
+        <div class="input-group">
+          <label>تاریخ تولد (اختیاری)</label>
+          <input class="input" id="crm-bday" placeholder="YYYY-MM-DD">
+        </div>
+      </div>
+      <div class="actions">
+        <button id="btn-create" class="btn btn-primary">
+          <span>✨</span> ساخت مشتری
+        </button>
+        <button id="btn-create-reset" class="btn btn-ghost">ریست</button>
+      </div>
+      <div id="create-result" class="debug-area"></div>
+    </main>
+
+    <!-- GHOST TAB -->
+    <main id="ghost" class="glass-card tab-panel hidden anim-fade">
+      <div class="header-section">
+        <h3>ساخت Ghost</h3>
+        <p class="subtitle">ایجاد رکورد موقت بدون نیاز به اطلاعات کامل</p>
+      </div>
+      <div class="form-grid">
+        <div class="input-group">
+          <label>نام (اختیاری)</label>
+          <input class="input" id="ghost-name" placeholder="نام نمایشی">
+        </div>
+        <div class="input-group">
+          <label>کلید جستجو (Search Key)</label>
+          <input class="input" id="ghost-search" placeholder="اگر نام خالی است الزامی">
+        </div>
+        <div class="input-group">
+          <label>تاریخ تولد</label>
+          <input class="input" id="ghost-bday" placeholder="YYYY-MM-DD">
+        </div>
+      </div>
+      <div class="actions">
+        <button id="btn-ghost" class="btn btn-primary">
+          <span>👻</span> ساخت Ghost
+        </button>
+        <button id="btn-ghost-reset" class="btn btn-ghost">ریست</button>
+      </div>
+      <div id="ghost-result" class="debug-area"></div>
+    </main>
+
+    <!-- INSIGHT TAB -->
+    <main id="insight" class="glass-card tab-panel hidden anim-fade">
+      <div class="header-section">
+        <h3>اینسایت مشتری</h3>
+        <p class="subtitle">دریافت تحلیل‌ها و متریک‌ها با شناسه مشتری</p>
+      </div>
+      <div class="form-grid">
+        <div class="input-group">
+          <label>Customer ID</label>
+          <input class="input" id="insight-id" placeholder="CUST_...">
+        </div>
+      </div>
+      <div class="actions">
+        <button id="btn-insight" class="btn btn-primary">
+          <span>📊</span> دریافت گزارش
+        </button>
+        <button id="btn-insight-reset" class="btn btn-ghost">ریست</button>
+      </div>
+      <div id="insight-result" class="debug-area"></div>
+    </main>
+  </div>
+
+  <script>
+    // --- Logic & Helpers ---
+    const baseUrlInput = document.getElementById("baseUrl");
+    const toastEl = document.getElementById("toast");
+    const toastMsg = document.getElementById("toast-msg");
+    const toastDot = document.querySelector(".toast-dot");
+
+    const defaultBase = () => `${window.location.origin.replace(/\/$/,"")}/webhook/crm-smart-form`;
+    baseUrlInput.value = localStorage.getItem("crmBaseUrl") || defaultBase();
+    baseUrlInput.addEventListener("input", () => localStorage.setItem("crmBaseUrl", baseUrlInput.value.trim()));
+
+    // Tabs Logic
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
+        
+        btn.classList.add("active");
+        const panel = document.getElementById(btn.dataset.tab);
+        panel.classList.remove("hidden");
+        // Reset animation
+        panel.classList.remove("anim-fade");
+        void panel.offsetWidth; 
+        panel.classList.add("anim-fade");
+      });
+    });
+
+    // Toast Logic
+    let toastTimer;
+    function showToast(msg, type="neutral") {
+      clearTimeout(toastTimer);
+      toastMsg.textContent = msg;
+      toastEl.className = "toast show";
+      toastEl.classList.add(type);
+      
+      const colors = { success: "#10b981", error: "#ef4444", warn: "#f59e0b", neutral: "#fff" };
+      toastDot.style.background = colors[type] || colors.neutral;
+
+      toastTimer = setTimeout(() => {
+        toastEl.classList.remove("show");
+      }, 3000);
+    }
+
+    // Normalization
+    const normalizePhone = (raw) => {
+      let s = String(raw || "").trim().replace(/[^\d+]/g, "");
+      if (s.startsWith("0098")) s = "+98" + s.slice(4);
+      if (s.startsWith("98") && !s.startsWith("+98")) s = "+98" + s.slice(2);
+      if (s.startsWith("+98")) s = "0" + s.slice(3);
+      if (/^9\d{9}$/.test(s)) s = "0" + s;
+      return s.replace(/\D/g, "");
+    };
+    const normalizeName = (str) => String(str||"").trim().replace(/\s+/g, " ").toLowerCase();
+    const safeParseJSON = (str) => { try { return JSON.parse(str); } catch(_) { return {}; } };
+    const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString('fa-IR') : "-";
+    const fmtNum = (n) => n ? n.toLocaleString() : "0";
+
+    // API Caller
+    async function callApi(payload, resultId) {
+      const resultEl = document.getElementById(resultId);
+      const base = baseUrlInput.value.trim().replace(/\/$/,"");
+      
+      if (!base) { showToast("آدرس وبهوک تنظیم نشده است", "error"); return null; }
+      
+      showToast("در حال ارسال درخواست...", "warn");
+      resultEl.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">... در حال پردازش</div>`;
+
+      try {
+        const res = await fetch(base, { 
+          method: "POST", 
+          headers: { "Content-Type": "application/json" }, 
+          body: JSON.stringify(payload) 
+        });
+        const text = await res.text();
+        let data = text; 
+        try { data = JSON.parse(text); } catch(_){}
+        
+        if (res.ok) {
+          showToast("دریافت پاسخ موفق", "success");
+          return { data, ok: true };
+        } else {
+          showToast(`خطای ${res.status}`, "error");
+          renderRaw(resultEl, data);
+          return null;
+        }
+      } catch (e) {
+        showToast("خطای ارتباط با سرور", "error");
+        renderRaw(resultEl, String(e));
+        return null;
+      }
+    }
+
+    // Render Helpers
+    function renderRaw(container, data) {
+      container.innerHTML = "";
+      const details = document.createElement("details");
+      details.open = true;
+      details.innerHTML = `<summary>پاسخ خام (JSON)</summary><pre>${typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>`;
+      container.appendChild(details);
+    }
+
+    function renderDashboard(container, data) {
+      container.innerHTML = "";
+      
+      // Handle special states
+      if (data.match_status === "no_match") {
+        container.innerHTML = `<div style="padding:20px; text-align:center; border:1px dashed var(--glass-border); border-radius:12px; color:var(--danger);">نتیجه‌ای یافت نشد.</div>`;
+        renderRaw(container, data);
+        return;
+      }
+      
+      const c = data.customer || {};
+      const metrics = safeParseJSON(c.metrics_json || data.metrics_json || "{}");
+
+      const html = `
+        <div class="result-card">
+          <div class="result-header">
+            <div>
+              <div style="font-size:18px; font-weight:700;">${c.name || "کاربر ناشناس"}</div>
+              <div style="font-size:12px; color:var(--text-muted); font-family:'Space Grotesk'">${c.customer_id || "ID: -"}</div>
+            </div>
+            <div class="pill">${c.phone || "No Phone"}</div>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-item">
+              <span class="metric-label">آخرین بازدید</span>
+              <span class="metric-value" style="font-size:14px">${fmtDate(metrics.last_visit)}</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">خرید (۶۰ روز)</span>
+              <span class="metric-value">${fmtNum(metrics.orders_last_60_days)}</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">مجموع هزینه</span>
+              <span class="metric-value" style="color:var(--success)">${fmtNum(metrics.total_spent)}</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">تعداد بازدید</span>
+              <span class="metric-value">${fmtNum(metrics.visits_count)}</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">محصول محبوب</span>
+              <span class="metric-value" style="font-size:14px">${metrics.fav_item || "-"}</span>
+            </div>
+             <div class="metric-item">
+              <span class="metric-label">NPS / فیدبک</span>
+              <span class="metric-value" style="font-size:14px">${metrics.last_feedback || "-"}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      container.innerHTML = html;
+      
+      // Append raw json collapsed
+      const details = document.createElement("details");
+      details.style.marginTop = "12px";
+      details.innerHTML = `<summary>مشاهده JSON کامل</summary><pre>${JSON.stringify(data, null, 2)}</pre>`;
+      container.appendChild(details);
+    }
+
+    function renderSuccessCard(container, data, title) {
+      container.innerHTML = `
+        <div style="background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.2); border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+          <div style="background:#10b981; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:black; font-weight:bold;">✓</div>
+          <strong style="color:#10b981;">${title}</strong>
+        </div>
+      `;
+      renderRaw(container, data);
+    }
+
+    // --- Event Listeners ---
+    
+    // Search
+    document.getElementById("btn-search").addEventListener("click", async () => {
+      const q = document.getElementById("search-query").value;
+      if (!q.trim()) return showToast("لطفا ورودی را پر کنید", "warn");
+      
+      const isPhone = /^\+?\d{7,15}$/.test(q.replace(/\D/g,""));
+      const payload = { mode: "search", search_query: isPhone ? normalizePhone(q) : normalizeName(q) };
+      
+      const res = await callApi(payload, "search-result");
+      if (res) renderDashboard(document.getElementById("search-result"), res.data);
+    });
+    
+    document.getElementById("btn-search-reset").addEventListener("click", () => {
+      document.getElementById("search-query").value = "";
+      document.getElementById("search-result").innerHTML = "";
+    });
+
+    // Create
+    document.getElementById("btn-create").addEventListener("click", async () => {
+      const name = document.getElementById("crm-name").value;
+      const phone = normalizePhone(document.getElementById("crm-phone").value);
+      const birthday = document.getElementById("crm-bday").value.trim();
+      
+      if (!name.trim() || !phone) return showToast("نام و موبایل الزامی است", "warn");
+      
+      const payload = { mode: "create_crm", name, phone, birthday };
+      const res = await callApi(payload, "create-result");
+      if (res) renderSuccessCard(document.getElementById("create-result"), res.data, "مشتری با موفقیت ساخته شد");
+    });
+    
+    document.getElementById("btn-create-reset").addEventListener("click", () => {
+       ["crm-name","crm-phone","crm-bday"].forEach(id => document.getElementById(id).value="");
+       document.getElementById("create-result").innerHTML = "";
+    });
+
+    // Ghost
+    document.getElementById("btn-ghost").addEventListener("click", async () => {
+      const name = document.getElementById("ghost-name").value;
+      const search = document.getElementById("ghost-search").value;
+      const birthday = document.getElementById("ghost-bday").value.trim();
+      
+      if (!name.trim() && !search.trim()) return showToast("نام یا کلید جستجو الزامی است", "warn");
+      
+      const payload = { mode: "create_ghost", name, search_query: normalizeName(search || name), birthday };
+      const res = await callApi(payload, "ghost-result");
+      if (res) renderSuccessCard(document.getElementById("ghost-result"), res.data, "Ghost Created Successfully");
+    });
+    
+    document.getElementById("btn-ghost-reset").addEventListener("click", () => {
+       ["ghost-name","ghost-search","ghost-bday"].forEach(id => document.getElementById(id).value="");
+       document.getElementById("ghost-result").innerHTML = "";
+    });
+
+    // Insight
+    document.getElementById("btn-insight").addEventListener("click", async () => {
+      const id = document.getElementById("insight-id").value.trim();
+      if (!id) return showToast("Customer ID الزامی است", "warn");
+      
+      const payload = { mode: "insight", customer_id: id };
+      const res = await callApi(payload, "insight-result");
+      if (res) renderDashboard(document.getElementById("insight-result"), res.data);
+    });
+
+    document.getElementById("btn-insight-reset").addEventListener("click", () => {
+      document.getElementById("insight-id").value="";
+      document.getElementById("insight-result").innerHTML="";
+    });
+
+    // Demo Fill
+    document.getElementById("fillDemo").addEventListener("click", () => {
+      document.getElementById("search-query").value = "09123456789";
+      document.getElementById("crm-name").value = "علی رضایی";
+      document.getElementById("crm-phone").value = "09123456789";
+      document.getElementById("crm-bday").value = "1990-01-01";
+      document.getElementById("ghost-name").value = "مشتری مهمان";
+      document.getElementById("insight-id").value = "CUST_123";
+      showToast("فرم‌ها با داده‌های نمونه پر شدند");
+    });
+
+  </script>
+</body>
+</html>

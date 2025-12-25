@@ -1,0 +1,1002 @@
+{
+  "name": "Phase 4 - Smart CRM Form (Sheets)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crm-smart-form",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "9bfc0b0b-2f4d-407c-8269-bf33366b844d",
+      "name": "Smart CRM Form Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -2064,
+        224
+      ],
+      "webhookId": "b5e2224b-f055-47f8-b771-f552437c2cec"
+    },
+    {
+      "parameters": {
+        "functionCode": "const b = $json || {};\nconst mode = (b.mode || 'search').trim();\nconst search_query = (b.search_query || '').trim();\nconst name = (b.name || '').trim();\nconst phone = (b.phone || '').trim();\nconst birthday = (b.birthday || '').trim();\nconst customer_id = (b.customer_id || '').trim();\nconst errs = [];\nif (mode === 'search' && !search_query) errs.push('search_query is required. Please enter full name or phone.');\nif (mode === 'create_crm' && (!name || !phone)) errs.push('name and phone are required for create_crm.');\nif (mode === 'create_ghost' && !name && !search_query) errs.push('name or search_query required for create_ghost.');\nif (mode === 'insight' && !customer_id) errs.push('customer_id is required for insight.');\nif (errs.length) {\n  return [{ json: { error: true, statusCode: 400, body: { ok: false, error: errs.join(' ') } } }];\n}\nreturn [{ json: { error: false, mode, search_query, name, phone, birthday, customer_id } }];"
+      },
+      "id": "39333906-ce51-4771-8ed3-197a79323267",
+      "name": "Validate & Normalize Input",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -1856,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.error !== true}}"
+            }
+          ]
+        }
+      },
+      "id": "d2077388-2d5b-46d2-a045-ae2b3c5139bf",
+      "name": "Input OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -1632,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": "={{$json.statusCode || 400}}"
+        }
+      },
+      "id": "c929d1f1-e0d6-4aa8-ad6c-a555a8ffcd1f",
+      "name": "Return Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -1424,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "value1": "={{$json.mode}}",
+        "rules": [
+          {
+            "operation": "equal",
+            "value2": "search"
+          },
+          {
+            "operation": "equal",
+            "value2": "create_crm"
+          },
+          {
+            "operation": "equal",
+            "value2": "create_ghost"
+          },
+          {
+            "operation": "equal",
+            "value2": "insight"
+          }
+        ]
+      },
+      "id": "f3e7ad45-8935-4c13-882e-3d34027db949",
+      "name": "Mode Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        -1424,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const body = $json || {};\nconst rawQuery = (body.search_query || '').trim();\n\nconst normalizePhone = (raw) => {\n  let s = String(raw || '').replace(/[^\\d+]/g, '').trim();\n  if (s.startsWith('0098')) s = '+98' + s.slice(4);\n  if (s.startsWith('98') && !s.startsWith('+98')) s = '+98' + s.slice(2);\n  if (s.startsWith('+98')) s = '0' + s.slice(3);\n  if (/^9\\d{9}$/.test(s)) s = '0' + s;\n  return s.replace(/\\D/g, '');\n};\n\nconst normalizeName = (str) => str\n  .trim()\n  .replace(/\\s+/g, ' ')\n  .replace(/[\\u064a\\u06cc]/g, '\\u06cc')\n  .replace(/[\\u0643\\u06a9]/g, '\\u06a9')\n  .toLowerCase();\n\nconst cleaned = rawQuery.replace(/[^\\d+]/g, '');\nconst isPhone = /^\\+?\\d{7,15}$/.test(cleaned);\n\nconst normalized_phone = isPhone ? normalizePhone(cleaned) : '';\nconst search_query_normalized = isPhone ? '' : normalizeName(rawQuery);\n\nreturn [{ json: { ...$json, isPhone, normalized_phone, search_query_normalized } }];\n"
+      },
+      "id": "3992cc97-ac33-43cf-a069-15f7fea7b37a",
+      "name": "Normalize Search Query",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1FMhzlx8F_e_3xsmd5XLg1VVrzXErT1TW",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "Customers"
+        },
+        "options": {}
+      },
+      "id": "dc8b8111-7d56-4bd2-9748-d4df4e6b9260",
+      "name": "Read Customers (All)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -1008,
+        160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LYXGCt2DCxMqUoNu",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = $items('Read Customers (All)', 0, 0).json;\nconst rows = Array.isArray(data) ? data : (data.data || data);\nconst ctx = $json;\n\nconst normalizePhone = (raw) => {\n  let s = String(raw || '').replace(/[^\\d+]/g, '').trim();\n  if (s.startsWith('0098')) s = '+98' + s.slice(4);\n  if (s.startsWith('98') && !s.startsWith('+98')) s = '+98' + s.slice(2);\n  if (s.startsWith('+98')) s = '0' + s.slice(3);\n  if (/^9\\d{9}$/.test(s)) s = '0' + s;\n  return s.replace(/\\D/g, '');\n};\n\nconst normalizeName = (str) => str\n  .trim()\n  .replace(/\\s+/g, ' ')\n  .replace(/[\\u064a\\u06cc]/g, '\\u06cc')\n  .replace(/[\\u0643\\u06a9]/g, '\\u06a9')\n  .toLowerCase();\n\nlet matches = [];\nif (ctx.isPhone) {\n  const target = normalizePhone(ctx.normalized_phone);\n  matches = rows.filter(r => normalizePhone(r.phone) === target);\n} else {\n  const target = normalizeName(ctx.search_query_normalized);\n  matches = rows.filter(r => (r.name_normalized || '').toLowerCase() === target);\n}\n\nreturn [{ json: { ...ctx, matches } }];\n"
+      },
+      "id": "ae7caeb9-e0ce-41c3-bc78-573c1bf97f5e",
+      "name": "Filter Matches",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const m = $json.matches || [];\nlet match_status = 'no_match';\nif (m.length === 1) match_status = 'single_match';\nelse if (m.length > 1) match_status = 'multi_match';\nreturn [{ json: { ...$json, match_status } }];"
+      },
+      "id": "7bab5cd5-895b-4a91-946c-004ac6005808",
+      "name": "Route Match Count",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "value1": "={{$json.match_status}}",
+        "rules": [
+          {
+            "operation": "equal",
+            "value2": "no_match"
+          },
+          {
+            "operation": "equal",
+            "value2": "single_match"
+          },
+          {
+            "operation": "equal",
+            "value2": "multi_match"
+          }
+        ]
+      },
+      "id": "46140b29-3522-4a1c-a33c-7e0438c01554",
+      "name": "Match Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "f47647fe-c587-4c13-b783-eed3f330e0a1",
+      "name": "Return No Match",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "0d301ec2-a5b5-43ff-ab1c-d017290a8fd3",
+      "name": "Return Multi Match",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        256,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const c = ($json.matches || [])[0] || {};\n\nconst normalizePhone = (raw) => {\n  let s = String(raw || '').replace(/[^\\d+]/g, '').trim();\n  if (s.startsWith('0098')) s = '+98' + s.slice(4);\n  if (s.startsWith('98') && !s.startsWith('+98')) s = '+98' + s.slice(2);\n  if (s.startsWith('+98')) s = '0' + s.slice(3);\n  if (/^9\\d{9}$/.test(s)) s = '0' + s;\n  return s.replace(/\\D/g, '');\n};\n\nconst normalizeName = (str) => str\n  .trim()\n  .replace(/\\s+/g, ' ')\n  .replace(/[\\u064a\\u06cc]/g, '\\u06cc')\n  .replace(/[\\u0643\\u06a9]/g, '\\u06a9')\n  .toLowerCase();\n\nconst name = $json.name || c.name || '';\nconst birthday = $json.birthday || c.birthday || '';\nconst phone = normalizePhone($json.phone || c.phone || '');\nconst name_normalized = normalizeName(name);\n\nreturn [{ json: { ...$json, customer: { ...c, name, birthday, phone, name_normalized } } }];\n"
+      },
+      "id": "803e8e91-1db5-40f5-95bb-3c59c72027e9",
+      "name": "Extract Single",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        256,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "lookup",
+        "documentId": ""
+      },
+      "id": "a3f0d349-e5b7-40e6-9eed-69375fa84718",
+      "name": "Read Orders by Customer",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        464,
+        160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LYXGCt2DCxMqUoNu",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "lookup",
+        "documentId": ""
+      },
+      "id": "57cf7d6e-afda-455d-9d13-53722add7873",
+      "name": "Read Feedback by Customer",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        272,
+        592
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LYXGCt2DCxMqUoNu",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const customer = $json.customer || {};\nconst orders = ($items('Read Orders by Customer',0,0).json || []);\nconst feedbacks = ($items('Read Feedback by Customer',0,0).json || []);\nconst warnings = [];\nconst now = Date.now();\nlet visits_count = Array.isArray(orders) ? orders.length : 0;\nlet total_spent = 0;\nlet last_visit = null;\nlet orders_last_60_days = 0;\nconst favCount = {};\nfor (const o of orders) {\n  const created = Date.parse(o.closed_at || o.created_at || '') || 0;\n  if (created) {\n    if (!last_visit || created > last_visit) last_visit = created;\n    if (created >= now - 60*24*60*60*1000) orders_last_60_days += 1;\n  }\n  total_spent += parseFloat(o.total_amount || '0') || 0;\n  try {\n    const items = JSON.parse(o.items_snapshot || '[]');\n    items.forEach(it => {\n      const key = it.name || it.item_id || 'unknown';\n      favCount[key] = (favCount[key] || 0) + (parseFloat(it.quantity || '1') || 1);\n    });\n  } catch (e) {\n    warnings.push(`items_snapshot parse failed for order ${o.order_id || o.id || 'unknown'}: ${e.message}`);\n  }\n}\nlet fav_item = null;\nlet maxFav = 0;\nObject.entries(favCount).forEach(([k,v])=>{ if (v>maxFav){maxFav=v;fav_item=k;} });\nlet last_feedback = null;\nif (Array.isArray(feedbacks) && feedbacks.length) {\n  feedbacks.sort((a,b)=> (Date.parse(b.created_at||'')||0)-(Date.parse(a.created_at||'')||0));\n  last_feedback = feedbacks[0].sentiment || null;\n}\nconst metrics = {\n  last_visit: last_visit ? new Date(last_visit).toISOString() : null,\n  orders_last_60_days,\n  total_spent,\n  visits_count,\n  fav_item,\n  last_feedback\n};\nconst insight = `تعداد بازدید: ${visits_count} | سفارش‌های 60 روز اخیر: ${orders_last_60_days} | مجموع مبلغ سفارش: ${total_spent}`;\nreturn [{ json: { ...$json, customer, metrics_json: JSON.stringify(metrics), insight, warnings } }];\n"
+      },
+      "id": "418038da-6722-4fea-9a3b-90bbf00f297a",
+      "name": "Compute Metrics & Insight",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        656,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": "",
+        "sheetName": "customers",
+        "columns": [
+          "name",
+          "birthday",
+          "phone",
+          "metrics_json"
+        ],
+        "options": {}
+      },
+      "id": "84f147ec-6c52-48c8-bbaf-5a5f6ec85534",
+      "name": "Update Customer Metrics",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        832,
+        160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LYXGCt2DCxMqUoNu",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "93bf6c18-e0ca-4f91-9c2b-eef26ac8c23a",
+      "name": "Return Single Insight",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $json;\nconst id = `CUST_${Date.now()}`;\n\nconst normalizePhone = (raw) => {\n  let s = String(raw || '').replace(/[^\\d+]/g, '').trim();\n  if (s.startsWith('0098')) s = '+98' + s.slice(4);\n  if (s.startsWith('98') && !s.startsWith('+98')) s = '+98' + s.slice(2);\n  if (s.startsWith('+98')) s = '0' + s.slice(3);\n  if (/^9\\d{9}$/.test(s)) s = '0' + s;\n  return s.replace(/\\D/g, '');\n};\n\nconst normalizeName = (str) => str\n  .trim()\n  .replace(/\\s+/g, ' ')\n  .replace(/[\\u064a\\u06cc]/g, '\\u06cc')\n  .replace(/[\\u0643\\u06a9]/g, '\\u06a9')\n  .toLowerCase();\n\nreturn [{\n  json: {\n    customer_id: id,\n    name: input.name,\n    name_normalized: normalizeName(input.name || ''),\n    phone: normalizePhone(input.phone),\n    birthday: input.birthday || '',\n    crm_active: 'TRUE',\n    metrics_json: JSON.stringify({})\n  }\n}];\n"
+      },
+      "id": "c031e1eb-a281-4bfc-b715-012d75ce3c28",
+      "name": "Build Create CRM Row",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "",
+        "sheetName": "customers",
+        "columns": [
+          "customer_id",
+          "name",
+          "name_normalized",
+          "phone",
+          "birthday",
+          "crm_active",
+          "metrics_json"
+        ],
+        "options": {}
+      },
+      "id": "881aedef-3dda-49ce-ae1a-810e836c7249",
+      "name": "Append Customer (CRM)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -800,
+        352
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LYXGCt2DCxMqUoNu",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "f5693796-3ffd-497d-a63b-390f2477226b",
+      "name": "Return CRM Created",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $json;\nconst id = `GHOST_${Date.now()}`;\n\nconst normalizeName = (str) => str\n  .trim()\n  .replace(/\\s+/g, ' ')\n  .replace(/[\\u064a\\u06cc]/g, '\\u06cc')\n  .replace(/[\\u0643\\u06a9]/g, '\\u06a9')\n  .toLowerCase();\n\nconst nameVal = input.name || input.search_query || '';\n\nreturn [{ json: { customer_id: id, name: nameVal, name_normalized: normalizeName(nameVal || ''), phone: '', birthday: input.birthday || '', crm_active: 'FALSE', metrics_json: JSON.stringify({}) } }];\n"
+      },
+      "id": "fca65259-6456-49f7-b241-41ca4f0dde56",
+      "name": "Build Ghost Row",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "",
+        "sheetName": "customers",
+        "columns": [
+          "customer_id",
+          "name",
+          "name_normalized",
+          "phone",
+          "birthday",
+          "crm_active",
+          "metrics_json"
+        ],
+        "options": {}
+      },
+      "id": "98d882ad-b089-4f06-99c7-c6b78f5ec8e9",
+      "name": "Append Customer (Ghost)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -800,
+        544
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LYXGCt2DCxMqUoNu",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "7838aa39-c8b3-4391-b160-993632a11091",
+      "name": "Return Ghost Created",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "lookup",
+        "documentId": ""
+      },
+      "id": "e9dd1b4a-2005-420e-bc2c-e35bd71e6fca",
+      "name": "Read Customer (Insight)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -1248,
+        768
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LYXGCt2DCxMqUoNu",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{!!$json.customer_id}}"
+            }
+          ]
+        }
+      },
+      "id": "5cdf0663-2c70-477d-a022-8d482710363c",
+      "name": "Insight Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 404
+        }
+      },
+      "id": "d79365c9-0ce1-40e4-91f4-23931ee649ab",
+      "name": "Return Insight Not Found",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -1008,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{ json: { customer: $json, customer_id: $json.customer_id } }];"
+      },
+      "id": "b093949f-76d1-43bd-b556-8ae9d91c584a",
+      "name": "Pass Insight Customer",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "lookup",
+        "documentId": ""
+      },
+      "id": "11d936a6-54e0-4bdf-baf1-07b984f03052",
+      "name": "Read Orders (Insight)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -544,
+        752
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LYXGCt2DCxMqUoNu",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "lookup",
+        "documentId": ""
+      },
+      "id": "c3bdb5d6-579f-403f-a6c2-5a0d02cf8e73",
+      "name": "Read Feedback (Insight)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -576,
+        1024
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LYXGCt2DCxMqUoNu",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const customer = $json.customer || {};\nconst orders = ($items('Read Orders (Insight)',0,0).json || []);\nconst feedbacks = ($items('Read Feedback (Insight)',0,0).json || []);\nconst warnings = [];\nconst now = Date.now();\nlet visits_count = Array.isArray(orders) ? orders.length : 0;\nlet total_spent = 0;\nlet last_visit = null;\nlet orders_last_60_days = 0;\nconst favCount = {};\nfor (const o of orders) {\n  const created = Date.parse(o.closed_at || o.created_at || '') || 0;\n  if (created) {\n    if (!last_visit || created > last_visit) last_visit = created;\n    if (created >= now - 60*24*60*60*1000) orders_last_60_days += 1;\n  }\n  total_spent += parseFloat(o.total_amount || '0') || 0;\n  try {\n    const items = JSON.parse(o.items_snapshot || '[]');\n    items.forEach(it => {\n      const key = it.name || it.item_id || 'unknown';\n      favCount[key] = (favCount[key] || 0) + (parseFloat(it.quantity || '1') || 1);\n    });\n  } catch (e) {\n    warnings.push(`items_snapshot parse failed for order ${o.order_id || o.id || 'unknown'}: ${e.message}`);\n  }\n}\nlet fav_item = null;\nlet maxFav = 0;\nObject.entries(favCount).forEach(([k,v])=>{ if (v>maxFav){maxFav=v;fav_item=k;} });\nlet last_feedback = null;\nif (Array.isArray(feedbacks) && feedbacks.length) {\n  feedbacks.sort((a,b)=> (Date.parse(b.created_at||'')||0)-(Date.parse(a.created_at||'')||0));\n  last_feedback = feedbacks[0].sentiment || null;\n}\nconst metrics = {\n  last_visit: last_visit ? new Date(last_visit).toISOString() : null,\n  orders_last_60_days,\n  total_spent,\n  visits_count,\n  fav_item,\n  last_feedback\n};\nconst insight = `تعداد بازدید: ${visits_count} | سفارش‌های 60 روز اخیر: ${orders_last_60_days} | مجموع مبلغ سفارش: ${total_spent}`;\nreturn [{ json: { ...$json, customer, metrics_json: JSON.stringify(metrics), insight, warnings } }];\n"
+      },
+      "id": "0f864d1f-f46d-437c-a40b-9c5cad150a27",
+      "name": "Compute Insight Metrics",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": "",
+        "sheetName": "customers",
+        "columns": [
+          "metrics_json"
+        ],
+        "options": {}
+      },
+      "id": "b3c1d7ec-1031-46be-9317-9eee9ad8a592",
+      "name": "Update Customer Metrics (Insight)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -160,
+        752
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LYXGCt2DCxMqUoNu",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "e3073cc0-69ea-4cec-8b7b-532e7e5647ef",
+      "name": "Return Insight Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        96,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "crm-smart-form/ui",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "4a9bc377-7e67-4c7d-9e4c-2a0d9e2e7f11",
+      "name": "Serve CRM UI (GET)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -2064,
+        560
+      ],
+      "webhookId": "9c1f9c4b-30d2-4c0d-9d10-8a86e4b2d10d"
+    },
+    {
+      "parameters": {
+        "functionCode": "const b64 = \"PCFkb2N0eXBlIGh0bWw+CjxodG1sIGxhbmc9ImZhIiBkaXI9InJ0bCI+CjxoZWFkPgogIDxtZXRhIGNoYXJzZXQ9InV0Zi04Ij4KICA8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEiPgogIDx0aXRsZT5TbWFydCBDUk0gQ29uc29sZTwvdGl0bGU+CiAgPHN0eWxlPgogICAgQGltcG9ydCB1cmwoImh0dHBzOi8vZm9udHMuZ29vZ2xlYXBpcy5jb20vY3NzMj9mYW1pbHk9VmF6aXJtYXRuOndnaHRANDAwOzUwMDs2MDA7NzAwOzgwMCZmYW1pbHk9U3BhY2UrR3JvdGVzazp3Z2h0QDUwMDs2MDAmZGlzcGxheT1zd2FwIik7CgogICAgOnJvb3QgewogICAgICAtLWJnLWRhcms6ICMwNTA1MTE7CiAgICAgIC0tZ2xhc3MtcGFuZWw6IHJnYmEoMjAsIDI1LCA0MCwgMC42KTsKICAgICAgLS1nbGFzcy1ib3JkZXI6IHJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wOCk7CiAgICAgIC0tZ2xhc3MtaGlnaGxpZ2h0OiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDMpOwogICAgICAKICAgICAgLS1wcmltYXJ5OiAjNjM2NmYxOwogICAgICAtLXByaW1hcnktZ2xvdzogcmdiYSg5OSwgMTAyLCAyNDEsIDAuNCk7CiAgICAgIC0tYWNjZW50OiAjMDZiNmQ0OwogICAgICAtLWFjY2VudC1nbG93OiByZ2JhKDYsIDE4MiwgMjEyLCAwLjQpOwogICAgICAKICAgICAgLS10ZXh0LW1haW46ICNmOGZhZmM7CiAgICAgIC0tdGV4dC1tdXRlZDogIzk0YTNiODsKICAgICAgCiAgICAgIC0tc3VjY2VzczogIzEwYjk4MTsKICAgICAgLS1kYW5nZXI6ICNlZjQ0NDQ7CiAgICAgIC0td2FybjogI2Y1OWUwYjsKICAgICAgCiAgICAgIC0tcmFkaXVzLWxnOiAyNHB4OwogICAgICAtLXJhZGl1cy1tZDogMTZweDsKICAgICAgLS1yYWRpdXMtc206IDEycHg7CiAgICAgIAogICAgICAtLXNoYWRvdy1jYXJkOiAwIDIwcHggNDBweCAtMTBweCByZ2JhKDAsMCwwLDAuNSk7CiAgICB9CgogICAgKiB7IGJveC1zaXppbmc6IGJvcmRlci1ib3g7IG91dGxpbmU6IG5vbmU7IH0KICAgIAogICAgYm9keSB7CiAgICAgIG1hcmdpbjogMDsKICAgICAgbWluLWhlaWdodDogMTAwdmg7CiAgICAgIGZvbnQtZmFtaWx5OiAiVmF6aXJtYXRuIiwgIlNlZ29lIFVJIiwgc2Fucy1zZXJpZjsKICAgICAgYmFja2dyb3VuZC1jb2xvcjogdmFyKC0tYmctZGFyayk7CiAgICAgIGJhY2tncm91bmQtaW1hZ2U6IAogICAgICAgIHJhZGlhbC1ncmFkaWVudChjaXJjbGUgYXQgMTAlIDIwJSwgcmdiYSg5OSwgMTAyLCAyNDEsIDAuMTUpIDAlLCB0cmFuc3BhcmVudCA0MCUpLAogICAgICAgIHJhZGlhbC1ncmFkaWVudChjaXJjbGUgYXQgOTAlIDEwJSwgcmdiYSg2LCAxODIsIDIxMiwgMC4xNSkgMCUsIHRyYW5zcGFyZW50IDQwJSksCiAgICAgICAgcmFkaWFsLWdyYWRpZW50KGNpcmNsZSBhdCA1MCUgMTIwJSwgcmdiYSgxNjgsIDg1LCAyNDcsIDAuMikgMCUsIHRyYW5zcGFyZW50IDUwJSk7CiAgICAgIGNvbG9yOiB2YXIoLS10ZXh0LW1haW4pOwogICAgICBwYWRkaW5nOiA0MHB4IDIwcHg7CiAgICAgIGRpc3BsYXk6IGZsZXg7CiAgICAgIGp1c3RpZnktY29udGVudDogY2VudGVyOwogICAgfQoKICAgIC5jb250YWluZXIgewogICAgICB3aWR0aDogMTAwJTsKICAgICAgbWF4LXdpZHRoOiAxMDAwcHg7CiAgICAgIGRpc3BsYXk6IGZsZXg7CiAgICAgIGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47CiAgICAgIGdhcDogMzJweDsKICAgICAgcG9zaXRpb246IHJlbGF0aXZlOwogICAgfQoKICAgIC8qIC0tLSBUeXBvZ3JhcGh5IC0tLSAqLwogICAgaDEgeyBtYXJnaW46IDA7IGZvbnQtd2VpZ2h0OiA4MDA7IGZvbnQtc2l6ZTogMzJweDsgbGV0dGVyLXNwYWNpbmc6IC0wLjVweDsgYmFja2dyb3VuZDogbGluZWFyLWdyYWRpZW50KDEzNWRlZywgI2ZmZiwgIzk0YTNiOCk7IC13ZWJraXQtYmFja2dyb3VuZC1jbGlwOiB0ZXh0OyAtd2Via2l0LXRleHQtZmlsbC1jb2xvcjogdHJhbnNwYXJlbnQ7IH0KICAgIGgzIHsgbWFyZ2luOiAwIDAgNHB4IDA7IGZvbnQtc2l6ZTogMjBweDsgZm9udC13ZWlnaHQ6IDcwMDsgY29sb3I6IHZhcigtLXRleHQtbWFpbik7IH0KICAgIHAuc3VidGl0bGUgeyBtYXJnaW46IDA7IGNvbG9yOiB2YXIoLS10ZXh0LW11dGVkKTsgZm9udC1zaXplOiAxNHB4OyBsaW5lLWhlaWdodDogMS42OyB9CiAgICAKICAgIC8qIC0tLSBMYXlvdXQgQ29tcG9uZW50cyAtLS0gKi8KICAgIC5nbGFzcy1jYXJkIHsKICAgICAgYmFja2dyb3VuZDogdmFyKC0tZ2xhc3MtcGFuZWwpOwogICAgICBiYWNrZHJvcC1maWx0ZXI6IGJsdXIoMjBweCk7CiAgICAgIC13ZWJraXQtYmFja2Ryb3AtZmlsdGVyOiBibHVyKDIwcHgpOwogICAgICBib3JkZXI6IDFweCBzb2xpZCB2YXIoLS1nbGFzcy1ib3JkZXIpOwogICAgICBib3JkZXItcmFkaXVzOiB2YXIoLS1yYWRpdXMtbGcpOwogICAgICBwYWRkaW5nOiAzMnB4OwogICAgICBib3gtc2hhZG93OiB2YXIoLS1zaGFkb3ctY2FyZCk7CiAgICAgIHRyYW5zaXRpb246IHRyYW5zZm9ybSAwLjNzIGVhc2U7CiAgICB9CgogICAgaGVhZGVyIHsKICAgICAgZGlzcGxheTogZmxleDsKICAgICAganVzdGlmeS1jb250ZW50OiBzcGFjZS1iZXR3ZWVuOwogICAgICBhbGlnbi1pdGVtczogY2VudGVyOwogICAgICBmbGV4LXdyYXA6IHdyYXA7CiAgICAgIGdhcDogMjRweDsKICAgICAgcGFkZGluZy1ib3R0b206IDEwcHg7CiAgICB9CiAgICAKICAgIC5jb25maWctYmFyIHsKICAgICAgZGlzcGxheTogZmxleDsKICAgICAgZ2FwOiAxMnB4OwogICAgICBhbGlnbi1pdGVtczogY2VudGVyOwogICAgICBiYWNrZ3JvdW5kOiByZ2JhKDAsMCwwLDAuMik7CiAgICAgIHBhZGRpbmc6IDhweCA4cHggOHB4IDIwcHg7CiAgICAgIGJvcmRlci1yYWRpdXM6IDk5cHg7CiAgICAgIGJvcmRlcjogMXB4IHNvbGlkIHZhcigtLWdsYXNzLWJvcmRlcik7CiAgICAgIGZsZXg6IDE7CiAgICAgIG1heC13aWR0aDogNTAwcHg7CiAgICB9CiAgICAuY29uZmlnLWJhciBpbnB1dCB7CiAgICAgIGJhY2tncm91bmQ6IHRyYW5zcGFyZW50OwogICAgICBib3JkZXI6IG5vbmU7CiAgICAgIGNvbG9yOiB2YXIoLS10ZXh0LW1haW4pOwogICAgICBmb250LXNpemU6IDEzcHg7CiAgICAgIGZvbnQtZmFtaWx5OiAnU3BhY2UgR3JvdGVzaycsIHNhbnMtc2VyaWY7CiAgICAgIHdpZHRoOiAxMDAlOwogICAgICBvcGFjaXR5OiAwLjg7CiAgICB9CiAgICAuY29uZmlnLWJhciBpbnB1dDpmb2N1cyB7IG9wYWNpdHk6IDE7IH0KCiAgICAvKiAtLS0gVGFicyAtLS0gKi8KICAgIC50YWJzLXdyYXBwZXIgewogICAgICBiYWNrZ3JvdW5kOiByZ2JhKDAsMCwwLDAuMik7CiAgICAgIHBhZGRpbmc6IDZweDsKICAgICAgYm9yZGVyLXJhZGl1czogMjBweDsKICAgICAgYm9yZGVyOiAxcHggc29saWQgdmFyKC0tZ2xhc3MtYm9yZGVyKTsKICAgICAgZGlzcGxheTogZ3JpZDsKICAgICAgZ3JpZC10ZW1wbGF0ZS1jb2x1bW5zOiByZXBlYXQoNCwgMWZyKTsKICAgICAgZ2FwOiA2cHg7CiAgICAgIHBvc2l0aW9uOiByZWxhdGl2ZTsKICAgIH0KICAgIC50YWItYnRuIHsKICAgICAgYmFja2dyb3VuZDogdHJhbnNwYXJlbnQ7CiAgICAgIGJvcmRlcjogbm9uZTsKICAgICAgY29sb3I6IHZhcigtLXRleHQtbXV0ZWQpOwogICAgICBwYWRkaW5nOiAxNHB4OwogICAgICBib3JkZXItcmFkaXVzOiAxNHB4OwogICAgICBmb250LWZhbWlseTogaW5oZXJpdDsKICAgICAgZm9udC13ZWlnaHQ6IDYwMDsKICAgICAgZm9udC1zaXplOiAxNHB4OwogICAgICBjdXJzb3I6IHBvaW50ZXI7CiAgICAgIHRyYW5zaXRpb246IGFsbCAwLjNzIGN1YmljLWJlemllcigwLjQsIDAsIDAuMiwgMSk7CiAgICAgIHBvc2l0aW9uOiByZWxhdGl2ZTsKICAgICAgei1pbmRleDogMjsKICAgIH0KICAgIC50YWItYnRuOmhvdmVyIHsgY29sb3I6IHZhcigtLXRleHQtbWFpbik7IGJhY2tncm91bmQ6IHJnYmEoMjU1LDI1NSwyNTUsMC4wMyk7IH0KICAgIC50YWItYnRuLmFjdGl2ZSB7IGNvbG9yOiAjZmZmOyBiYWNrZ3JvdW5kOiBsaW5lYXItZ3JhZGllbnQoMTM1ZGVnLCB2YXIoLS1wcmltYXJ5KSwgdmFyKC0tYWNjZW50KSk7IGJveC1zaGFkb3c6IDAgNHB4IDE1cHggdmFyKC0tcHJpbWFyeS1nbG93KTsgfQoKICAgIC8qIC0tLSBGb3JtIEVsZW1lbnRzIC0tLSAqLwogICAgLmZvcm0tZ3JpZCB7IGRpc3BsYXk6IGdyaWQ7IGdyaWQtdGVtcGxhdGUtY29sdW1uczogcmVwZWF0KGF1dG8tZml0LCBtaW5tYXgoMjQwcHgsIDFmcikpOyBnYXA6IDIwcHg7IG1hcmdpbi10b3A6IDI0cHg7IH0KICAgIC5pbnB1dC1ncm91cCB7IHBvc2l0aW9uOiByZWxhdGl2ZTsgfQogICAgLmlucHV0LWdyb3VwIGxhYmVsIHsKICAgICAgZGlzcGxheTogYmxvY2s7CiAgICAgIGZvbnQtc2l6ZTogMTJweDsKICAgICAgY29sb3I6IHZhcigtLXRleHQtbXV0ZWQpOwogICAgICBtYXJnaW4tYm90dG9tOiA4cHg7CiAgICAgIGZvbnQtd2VpZ2h0OiA2MDA7CiAgICB9CiAgICAuaW5wdXQtd3JhcHBlciB7CiAgICAgIHBvc2l0aW9uOiByZWxhdGl2ZTsKICAgICAgZGlzcGxheTogZmxleDsKICAgICAgYWxpZ24taXRlbXM6IGNlbnRlcjsKICAgIH0KICAgIC5pbnB1dCB7CiAgICAgIHdpZHRoOiAxMDAlOwogICAgICBiYWNrZ3JvdW5kOiByZ2JhKDAsMCwwLDAuMik7CiAgICAgIGJvcmRlcjogMXB4IHNvbGlkIHZhcigtLWdsYXNzLWJvcmRlcik7CiAgICAgIGJvcmRlci1yYWRpdXM6IHZhcigtLXJhZGl1cy1tZCk7CiAgICAgIHBhZGRpbmc6IDE0cHggMTZweDsKICAgICAgY29sb3I6IHZhcigtLXRleHQtbWFpbik7CiAgICAgIGZvbnQtc2l6ZTogMTVweDsKICAgICAgdHJhbnNpdGlvbjogYWxsIDAuMnM7CiAgICAgIGZvbnQtZmFtaWx5OiAiVmF6aXJtYXRuIiwgc2Fucy1zZXJpZjsKICAgIH0KICAgIC5pbnB1dDpmb2N1cyB7CiAgICAgIGJvcmRlci1jb2xvcjogdmFyKC0tcHJpbWFyeSk7CiAgICAgIGJveC1zaGFkb3c6IDAgMCAwIDNweCByZ2JhKDk5LCAxMDIsIDI0MSwgMC4xNSk7CiAgICAgIGJhY2tncm91bmQ6IHJnYmEoMCwwLDAsMC4zKTsKICAgIH0KICAgIAogICAgLyogLS0tIEJ1dHRvbnMgLS0tICovCiAgICAuYWN0aW9ucyB7IG1hcmdpbi10b3A6IDMycHg7IGRpc3BsYXk6IGZsZXg7IGdhcDogMTZweDsgfQogICAgLmJ0biB7CiAgICAgIGJvcmRlcjogbm9uZTsKICAgICAgcGFkZGluZzogMTRweCAzMnB4OwogICAgICBib3JkZXItcmFkaXVzOiB2YXIoLS1yYWRpdXMtbWQpOwogICAgICBmb250LWZhbWlseTogaW5oZXJpdDsKICAgICAgZm9udC13ZWlnaHQ6IDcwMDsKICAgICAgZm9udC1zaXplOiAxNHB4OwogICAgICBjdXJzb3I6IHBvaW50ZXI7CiAgICAgIGRpc3BsYXk6IGlubGluZS1mbGV4OwogICAgICBhbGlnbi1pdGVtczogY2VudGVyOwogICAgICBnYXA6IDhweDsKICAgICAgdHJhbnNpdGlvbjogYWxsIDAuMnMgZWFzZTsKICAgIH0KICAgIC5idG4tcHJpbWFyeSB7CiAgICAgIGJhY2tncm91bmQ6IGxpbmVhci1ncmFkaWVudCgxMzVkZWcsIHZhcigtLXByaW1hcnkpLCAjNGY0NmU1KTsKICAgICAgY29sb3I6IHdoaXRlOwogICAgICBib3gtc2hhZG93OiAwIDhweCAyMHB4IC02cHggdmFyKC0tcHJpbWFyeS1nbG93KTsKICAgIH0KICAgIC5idG4tcHJpbWFyeTpob3ZlciB7IHRyYW5zZm9ybTogdHJhbnNsYXRlWSgtMnB4KTsgYm94LXNoYWRvdzogMCAxMnB4IDI0cHggLThweCB2YXIoLS1wcmltYXJ5LWdsb3cpOyB9CiAgICAuYnRuLXByaW1hcnk6YWN0aXZlIHsgdHJhbnNmb3JtOiB0cmFuc2xhdGVZKDApOyB9CiAgICAKICAgIC5idG4tZ2hvc3QgewogICAgICBiYWNrZ3JvdW5kOiByZ2JhKDI1NSwyNTUsMjU1LDAuMDUpOwogICAgICBjb2xvcjogdmFyKC0tdGV4dC1tYWluKTsKICAgICAgYm9yZGVyOiAxcHggc29saWQgdHJhbnNwYXJlbnQ7CiAgICB9CiAgICAuYnRuLWdob3N0OmhvdmVyIHsgYmFja2dyb3VuZDogcmdiYSgyNTUsMjU1LDI1NSwwLjEpOyBib3JkZXItY29sb3I6IHJnYmEoMjU1LDI1NSwyNTUsMC4xKTsgfQoKICAgIC8qIC0tLSBSZXN1bHRzICYgTWV0cmljcyAtLS0gKi8KICAgIC5kZWJ1Zy1hcmVhIHsgbWFyZ2luLXRvcDogMjRweDsgYW5pbWF0aW9uOiBmYWRlSW4gMC40cyBlYXNlOyB9CiAgICAucmVzdWx0LWNhcmQgewogICAgICBiYWNrZ3JvdW5kOiByZ2JhKDI1NSwyNTUsMjU1LDAuMDMpOwogICAgICBib3JkZXI6IDFweCBzb2xpZCB2YXIoLS1nbGFzcy1ib3JkZXIpOwogICAgICBib3JkZXItcmFkaXVzOiB2YXIoLS1yYWRpdXMtbWQpOwogICAgICBvdmVyZmxvdzogaGlkZGVuOwogICAgfQogICAgLnJlc3VsdC1oZWFkZXIgewogICAgICBwYWRkaW5nOiAyMHB4OwogICAgICBiYWNrZ3JvdW5kOiByZ2JhKDI1NSwyNTUsMjU1LDAuMDIpOwogICAgICBib3JkZXItYm90dG9tOiAxcHggc29saWQgdmFyKC0tZ2xhc3MtYm9yZGVyKTsKICAgICAgZGlzcGxheTogZmxleDsKICAgICAganVzdGlmeS1jb250ZW50OiBzcGFjZS1iZXR3ZWVuOwogICAgICBhbGlnbi1pdGVtczogY2VudGVyOwogICAgfQogICAgLnBpbGwgewogICAgICBiYWNrZ3JvdW5kOiByZ2JhKDYsIDE4MiwgMjEyLCAwLjE1KTsKICAgICAgY29sb3I6IHZhcigtLWFjY2VudCk7CiAgICAgIHBhZGRpbmc6IDZweCAxMnB4OwogICAgICBib3JkZXItcmFkaXVzOiA5OXB4OwogICAgICBmb250LXNpemU6IDEycHg7CiAgICAgIGZvbnQtd2VpZ2h0OiA2MDA7CiAgICAgIGxldHRlci1zcGFjaW5nOiAwLjVweDsKICAgIH0KICAgIC5tZXRyaWNzLWdyaWQgewogICAgICBkaXNwbGF5OiBncmlkOwogICAgICBncmlkLXRlbXBsYXRlLWNvbHVtbnM6IHJlcGVhdChhdXRvLWZpdCwgbWlubWF4KDE4MHB4LCAxZnIpKTsKICAgICAgZ2FwOiAxcHg7CiAgICAgIGJhY2tncm91bmQ6IHZhcigtLWdsYXNzLWJvcmRlcik7IC8qIGJvcmRlcnMgdmlhIGdhcCAqLwogICAgfQogICAgLm1ldHJpYy1pdGVtIHsKICAgICAgYmFja2dyb3VuZDogIzBkMTEyMDsgLyogRGFya2VyIHRoYW4gY2FyZCAqLwogICAgICBwYWRkaW5nOiAyMHB4OwogICAgICBkaXNwbGF5OiBmbGV4OwogICAgICBmbGV4LWRpcmVjdGlvbjogY29sdW1uOwogICAgICBnYXA6IDZweDsKICAgIH0KICAgIC5tZXRyaWMtbGFiZWwgeyBmb250LXNpemU6IDEycHg7IGNvbG9yOiB2YXIoLS10ZXh0LW11dGVkKTsgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsgbGV0dGVyLXNwYWNpbmc6IDAuNXB4OyB9CiAgICAubWV0cmljLXZhbHVlIHsgZm9udC1zaXplOiAxOHB4OyBmb250LXdlaWdodDogNzAwOyBjb2xvcjogdmFyKC0tdGV4dC1tYWluKTsgZm9udC1mYW1pbHk6ICdTcGFjZSBHcm90ZXNrJywgc2Fucy1zZXJpZjsgfQoKICAgIC8qIC0tLSBKc29uIFZpZXdlciAtLS0gKi8KICAgIGRldGFpbHMgeyBtYXJnaW4tdG9wOiAxNnB4OyBib3JkZXItcmFkaXVzOiB2YXIoLS1yYWRpdXMtc20pOyBvdmVyZmxvdzogaGlkZGVuOyBib3JkZXI6IDFweCBzb2xpZCB2YXIoLS1nbGFzcy1ib3JkZXIpOyB9CiAgICBzdW1tYXJ5IHsgcGFkZGluZzogMTJweCAxNnB4OyBiYWNrZ3JvdW5kOiByZ2JhKDAsMCwwLDAuMik7IGN1cnNvcjogcG9pbnRlcjsgZm9udC1zaXplOiAxM3B4OyBmb250LXdlaWdodDogNjAwOyB1c2VyLXNlbGVjdDogbm9uZTsgfQogICAgc3VtbWFyeTpob3ZlciB7IGJhY2tncm91bmQ6IHJnYmEoMCwwLDAsMC4zKTsgfQogICAgcHJlIHsgbWFyZ2luOiAwOyBwYWRkaW5nOiAxNnB4OyBiYWNrZ3JvdW5kOiAjMDgwYjE0OyBjb2xvcjogI2E1YjRmYzsgZm9udC1mYW1pbHk6ICdTcGFjZSBNb25vJywgbW9ub3NwYWNlOyBmb250LXNpemU6IDEycHg7IG92ZXJmbG93LXg6IGF1dG87IGxpbmUtaGVpZ2h0OiAxLjU7IH0KCiAgICAvKiAtLS0gVG9hc3QgTm90aWZpY2F0aW9uIC0tLSAqLwogICAgLnRvYXN0LWNvbnRhaW5lciB7IHBvc2l0aW9uOiBmaXhlZDsgYm90dG9tOiAzMHB4OyBsZWZ0OiA1MCU7IHRyYW5zZm9ybTogdHJhbnNsYXRlWCgtNTAlKTsgei1pbmRleDogMTAwOyBwb2ludGVyLWV2ZW50czogbm9uZTsgfQogICAgLnRvYXN0IHsKICAgICAgYmFja2dyb3VuZDogIzFlMjkzYjsKICAgICAgY29sb3I6IHdoaXRlOwogICAgICBwYWRkaW5nOiAxMnB4IDI0cHg7CiAgICAgIGJvcmRlci1yYWRpdXM6IDk5cHg7CiAgICAgIGJveC1zaGFkb3c6IDAgMTBweCAzMHB4IHJnYmEoMCwwLDAsMC40KTsKICAgICAgYm9yZGVyOiAxcHggc29saWQgcmdiYSgyNTUsMjU1LDI1NSwwLjEpOwogICAgICBmb250LXNpemU6IDE0cHg7CiAgICAgIGZvbnQtd2VpZ2h0OiA1MDA7CiAgICAgIGRpc3BsYXk6IGZsZXg7CiAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7CiAgICAgIGdhcDogMTBweDsKICAgICAgb3BhY2l0eTogMDsKICAgICAgdHJhbnNmb3JtOiB0cmFuc2xhdGVZKDIwcHgpOwogICAgICB0cmFuc2l0aW9uOiBhbGwgMC4zcyBjdWJpYy1iZXppZXIoMC4xNzUsIDAuODg1LCAwLjMyLCAxLjI3NSk7CiAgICB9CiAgICAudG9hc3Quc2hvdyB7IG9wYWNpdHk6IDE7IHRyYW5zZm9ybTogdHJhbnNsYXRlWSgwKTsgfQogICAgLnRvYXN0LnN1Y2Nlc3MgeyBib3JkZXItY29sb3I6IHZhcigtLXN1Y2Nlc3MpOyB9CiAgICAudG9hc3QuZXJyb3IgeyBib3JkZXItY29sb3I6IHZhcigtLWRhbmdlcik7IH0KICAgIC50b2FzdC1kb3QgeyB3aWR0aDogOHB4OyBoZWlnaHQ6IDhweDsgYm9yZGVyLXJhZGl1czogNTAlOyB9CgogICAgLyogLS0tIFV0aWxpdGllcyAtLS0gKi8KICAgIC5oaWRkZW4geyBkaXNwbGF5OiBub25lOyB9CiAgICBAa2V5ZnJhbWVzIGZhZGVJbiB7IGZyb20geyBvcGFjaXR5OiAwOyB0cmFuc2Zvcm06IHRyYW5zbGF0ZVkoMTBweCk7IH0gdG8geyBvcGFjaXR5OiAxOyB0cmFuc2Zvcm06IHRyYW5zbGF0ZVkoMCk7IH0gfQogICAgLmFuaW0tZmFkZSB7IGFuaW1hdGlvbjogZmFkZUluIDAuNHMgZWFzZSBiYWNrd2FyZHM7IH0KICAgIAogICAgLyogTW9iaWxlICovCiAgICBAbWVkaWEgKG1heC13aWR0aDogNjAwcHgpIHsKICAgICAgLnRhYnMtd3JhcHBlciB7IG92ZXJmbG93LXg6IGF1dG87IGRpc3BsYXk6IGZsZXg7IH0KICAgICAgLnRhYi1idG4geyBmbGV4OiAxOyB3aGl0ZS1zcGFjZTogbm93cmFwOyB9CiAgICAgIGhlYWRlciB7IGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47IGFsaWduLWl0ZW1zOiBzdHJldGNoOyB9CiAgICAgIGgxIHsgZm9udC1zaXplOiAyNnB4OyB0ZXh0LWFsaWduOiBjZW50ZXI7IH0KICAgICAgLmFjdGlvbnMgeyBmbGV4LWRpcmVjdGlvbjogY29sdW1uOyB9CiAgICAgIC5idG4geyB3aWR0aDogMTAwJTsganVzdGlmeS1jb250ZW50OiBjZW50ZXI7IH0KICAgIH0KICA8L3N0eWxlPgo8L2hlYWQ+Cjxib2R5PgoKICA8ZGl2IGNsYXNzPSJ0b2FzdC1jb250YWluZXIiPjxkaXYgaWQ9InRvYXN0IiBjbGFzcz0idG9hc3QiPjxkaXYgY2xhc3M9InRvYXN0LWRvdCI+PC9kaXY+PHNwYW4gaWQ9InRvYXN0LW1zZyI+PC9zcGFuPjwvZGl2PjwvZGl2PgoKICA8ZGl2IGNsYXNzPSJjb250YWluZXIiPgogICAgPGhlYWRlcj4KICAgICAgPGRpdj4KICAgICAgICA8aDE+U21hcnQgQ1JNIENvbnNvbGU8L2gxPgogICAgICAgIDxwIGNsYXNzPSJzdWJ0aXRsZSIgc3R5bGU9Im1hcmdpbi10b3A6NHB4OyI+2b7ZhtmEINmF2K/bjNix24zYqiDZiNio2YfZiNqpIC9jcm0tc21hcnQtZm9ybTwvcD4KICAgICAgPC9kaXY+CiAgICAgIDxkaXYgY2xhc3M9ImNvbmZpZy1iYXIiPgogICAgICAgIDxzcGFuIHN0eWxlPSJvcGFjaXR5OjAuNTsgZm9udC1zaXplOjE4cHg7Ij7wn5SXPC9zcGFuPgogICAgICAgIDxpbnB1dCBpZD0iYmFzZVVybCIgcGxhY2Vob2xkZXI9Imh0dHBzOi8veW91ci1uOG4taG9zdC93ZWJob29rL2NybS1zbWFydC1mb3JtIj4KICAgICAgICA8YnV0dG9uIGlkPSJmaWxsRGVtbyIgY2xhc3M9ImJ0bi1naG9zdCIgc3R5bGU9InBhZGRpbmc6IDZweCAxMnB4OyBib3JkZXItcmFkaXVzOiA4cHg7IGZvbnQtc2l6ZTogMTJweDsiPkRlbW88L2J1dHRvbj4KICAgICAgPC9kaXY+CiAgICA8L2hlYWRlcj4KCiAgICA8bmF2IGNsYXNzPSJ0YWJzLXdyYXBwZXIiPgogICAgICA8YnV0dG9uIGNsYXNzPSJ0YWItYnRuIGFjdGl2ZSIgZGF0YS10YWI9InNlYXJjaCI+2KzYs9iq2KzZiDwvYnV0dG9uPgogICAgICA8YnV0dG9uIGNsYXNzPSJ0YWItYnRuIiBkYXRhLXRhYj0iY3JlYXRlIj7Ys9in2K7YqiBDUk08L2J1dHRvbj4KICAgICAgPGJ1dHRvbiBjbGFzcz0idGFiLWJ0biIgZGF0YS10YWI9Imdob3N0Ij7Ys9in2K7YqiBHaG9zdDwvYnV0dG9uPgogICAgICA8YnV0dG9uIGNsYXNzPSJ0YWItYnRuIiBkYXRhLXRhYj0iaW5zaWdodCI+2KfbjNmG2LPYp9uM2Ko8L2J1dHRvbj4KICAgIDwvbmF2PgoKICAgIDwhLS0gU0VBUkNIIFRBQiAtLT4KICAgIDxtYWluIGlkPSJzZWFyY2giIGNsYXNzPSJnbGFzcy1jYXJkIHRhYi1wYW5lbCBhbmltLWZhZGUiPgogICAgICA8ZGl2IGNsYXNzPSJoZWFkZXItc2VjdGlvbiI+CiAgICAgICAgPGgzPtis2LPYqtis2Yg8L2gzPgogICAgICAgIDxwIGNsYXNzPSJzdWJ0aXRsZSI+24zYp9mB2KrZhiDZhdi02KrYsduMINio2LEg2KfYs9in2LMg2YbYp9mFINuM2Kcg2LTZhdin2LHZhyDYqtmF2KfYszwvcD4KICAgICAgPC9kaXY+CiAgICAgIDxkaXYgY2xhc3M9ImZvcm0tZ3JpZCI+CiAgICAgICAgPGRpdiBjbGFzcz0iaW5wdXQtZ3JvdXAiPgogICAgICAgICAgPGxhYmVsPti52KjYp9ix2Kog2KzYs9iq2KzZiDwvbGFiZWw+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJpbnB1dC13cmFwcGVyIj4KICAgICAgICAgICAgPGlucHV0IGNsYXNzPSJpbnB1dCIgaWQ9InNlYXJjaC1xdWVyeSIgcGxhY2Vob2xkZXI9ItmF2KvYp9mEOiAwOTEyMzQ1Njc4OSDbjNinINi52YTbjCDYsdi22KfbjNuMIj4KICAgICAgICAgIDwvZGl2PgogICAgICAgIDwvZGl2PgogICAgICA8L2Rpdj4KICAgICAgPGRpdiBjbGFzcz0iYWN0aW9ucyI+CiAgICAgICAgPGJ1dHRvbiBpZD0iYnRuLXNlYXJjaCIgY2xhc3M9ImJ0biBidG4tcHJpbWFyeSI+CiAgICAgICAgICA8c3Bhbj7wn5SNPC9zcGFuPiDYrNiz2KrYrNmICiAgICAgICAgPC9idXR0b24+CiAgICAgICAgPGJ1dHRvbiBpZD0iYnRuLXNlYXJjaC1yZXNldCIgY2xhc3M9ImJ0biBidG4tZ2hvc3QiPtm+2KfaqSDaqdix2K/ZhjwvYnV0dG9uPgogICAgICA8L2Rpdj4KICAgICAgPGRpdiBpZD0ic2VhcmNoLXJlc3VsdCIgY2xhc3M9ImRlYnVnLWFyZWEiPjwvZGl2PgogICAgPC9tYWluPgoKICAgIDwhLS0gQ1JFQVRFIFRBQiAtLT4KICAgIDxtYWluIGlkPSJjcmVhdGUiIGNsYXNzPSJnbGFzcy1jYXJkIHRhYi1wYW5lbCBoaWRkZW4gYW5pbS1mYWRlIj4KICAgICAgPGRpdiBjbGFzcz0iaGVhZGVyLXNlY3Rpb24iPgogICAgICAgIDxoMz7Ys9in2K7YqiBDUk08L2gzPgogICAgICAgIDxwIGNsYXNzPSJzdWJ0aXRsZSI+2KvYqNiqINix2qnZiNix2K8g2KzYr9uM2K8g2K/YsSDYr9uM2KrYp9io24zYsyBDUk08L3A+CiAgICAgIDwvZGl2PgogICAgICA8ZGl2IGNsYXNzPSJmb3JtLWdyaWQiPgogICAgICAgIDxkaXYgY2xhc3M9ImlucHV0LWdyb3VwIj4KICAgICAgICAgIDxsYWJlbD7Zhtin2YUg2qnYp9mF2YQ8L2xhYmVsPgogICAgICAgICAgPGlucHV0IGNsYXNzPSJpbnB1dCIgaWQ9ImNybS1uYW1lIiBwbGFjZWhvbGRlcj0i2YbYp9mFINmF2LTYqtix24wiPgogICAgICAgIDwvZGl2PgogICAgICAgIDxkaXYgY2xhc3M9ImlucHV0LWdyb3VwIj4KICAgICAgICAgIDxsYWJlbD7YtNmF2KfYsdmHINmF2YjYqNin24zZhDwvbGFiZWw+CiAgICAgICAgICA8aW5wdXQgY2xhc3M9ImlucHV0IiBpZD0iY3JtLXBob25lIiBwbGFjZWhvbGRlcj0iMDl4eHh4eHh4eHgiPgogICAgICAgIDwvZGl2PgogICAgICAgIDxkaXYgY2xhc3M9ImlucHV0LWdyb3VwIj4KICAgICAgICAgIDxsYWJlbD7Yqtin2LHbjNiuINiq2YjZhNivICjYp9iu2KrbjNin2LHbjCk8L2xhYmVsPgogICAgICAgICAgPGlucHV0IGNsYXNzPSJpbnB1dCIgaWQ9ImNybS1iZGF5IiBwbGFjZWhvbGRlcj0iWVlZWS1NTS1ERCI+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvZGl2PgogICAgICA8ZGl2IGNsYXNzPSJhY3Rpb25zIj4KICAgICAgICA8YnV0dG9uIGlkPSJidG4tY3JlYXRlIiBjbGFzcz0iYnRuIGJ0bi1wcmltYXJ5Ij4KICAgICAgICAgIDxzcGFuPuKcqDwvc3Bhbj4g2LPYp9iu2Kog2YXYtNiq2LHbjAogICAgICAgIDwvYnV0dG9uPgogICAgICAgIDxidXR0b24gaWQ9ImJ0bi1jcmVhdGUtcmVzZXQiIGNsYXNzPSJidG4gYnRuLWdob3N0Ij7YsduM2LPYqjwvYnV0dG9uPgogICAgICA8L2Rpdj4KICAgICAgPGRpdiBpZD0iY3JlYXRlLXJlc3VsdCIgY2xhc3M9ImRlYnVnLWFyZWEiPjwvZGl2PgogICAgPC9tYWluPgoKICAgIDwhLS0gR0hPU1QgVEFCIC0tPgogICAgPG1haW4gaWQ9Imdob3N0IiBjbGFzcz0iZ2xhc3MtY2FyZCB0YWItcGFuZWwgaGlkZGVuIGFuaW0tZmFkZSI+CiAgICAgIDxkaXYgY2xhc3M9ImhlYWRlci1zZWN0aW9uIj4KICAgICAgICA8aDM+2LPYp9iu2KogR2hvc3Q8L2gzPgogICAgICAgIDxwIGNsYXNzPSJzdWJ0aXRsZSI+2KfbjNis2KfYryDYsdqp2YjYsdivINmF2YjZgtiqINio2K/ZiNmGINmG24zYp9iyINio2Ycg2KfYt9mE2KfYudin2Kog2qnYp9mF2YQ8L3A+CiAgICAgIDwvZGl2PgogICAgICA8ZGl2IGNsYXNzPSJmb3JtLWdyaWQiPgogICAgICAgIDxkaXYgY2xhc3M9ImlucHV0LWdyb3VwIj4KICAgICAgICAgIDxsYWJlbD7Zhtin2YUgKNin2K7YqtuM2KfYsduMKTwvbGFiZWw+CiAgICAgICAgICA8aW5wdXQgY2xhc3M9ImlucHV0IiBpZD0iZ2hvc3QtbmFtZSIgcGxhY2Vob2xkZXI9ItmG2KfZhSDZhtmF2KfbjNi024wiPgogICAgICAgIDwvZGl2PgogICAgICAgIDxkaXYgY2xhc3M9ImlucHV0LWdyb3VwIj4KICAgICAgICAgIDxsYWJlbD7aqdmE24zYryDYrNiz2KrYrNmIIChTZWFyY2ggS2V5KTwvbGFiZWw+CiAgICAgICAgICA8aW5wdXQgY2xhc3M9ImlucHV0IiBpZD0iZ2hvc3Qtc2VhcmNoIiBwbGFjZWhvbGRlcj0i2Kfar9ixINmG2KfZhSDYrtin2YTbjCDYp9iz2Kog2KfZhNiy2KfZhduMIj4KICAgICAgICA8L2Rpdj4KICAgICAgICA8ZGl2IGNsYXNzPSJpbnB1dC1ncm91cCI+CiAgICAgICAgICA8bGFiZWw+2KrYp9ix24zYriDYqtmI2YTYrzwvbGFiZWw+CiAgICAgICAgICA8aW5wdXQgY2xhc3M9ImlucHV0IiBpZD0iZ2hvc3QtYmRheSIgcGxhY2Vob2xkZXI9IllZWVktTU0tREQiPgogICAgICAgIDwvZGl2PgogICAgICA8L2Rpdj4KICAgICAgPGRpdiBjbGFzcz0iYWN0aW9ucyI+CiAgICAgICAgPGJ1dHRvbiBpZD0iYnRuLWdob3N0IiBjbGFzcz0iYnRuIGJ0bi1wcmltYXJ5Ij4KICAgICAgICAgIDxzcGFuPvCfkbs8L3NwYW4+INiz2KfYrtiqIEdob3N0CiAgICAgICAgPC9idXR0b24+CiAgICAgICAgPGJ1dHRvbiBpZD0iYnRuLWdob3N0LXJlc2V0IiBjbGFzcz0iYnRuIGJ0bi1naG9zdCI+2LHbjNiz2Ko8L2J1dHRvbj4KICAgICAgPC9kaXY+CiAgICAgIDxkaXYgaWQ9Imdob3N0LXJlc3VsdCIgY2xhc3M9ImRlYnVnLWFyZWEiPjwvZGl2PgogICAgPC9tYWluPgoKICAgIDwhLS0gSU5TSUdIVCBUQUIgLS0+CiAgICA8bWFpbiBpZD0iaW5zaWdodCIgY2xhc3M9ImdsYXNzLWNhcmQgdGFiLXBhbmVsIGhpZGRlbiBhbmltLWZhZGUiPgogICAgICA8ZGl2IGNsYXNzPSJoZWFkZXItc2VjdGlvbiI+CiAgICAgICAgPGgzPtin24zZhtiz2KfbjNiqINmF2LTYqtix24w8L2gzPgogICAgICAgIDxwIGNsYXNzPSJzdWJ0aXRsZSI+2K/YsduM2KfZgdiqINiq2K3ZhNuM2YTigIzZh9inINmIINmF2KrYsduM2qnigIzZh9inINio2Kcg2LTZhtin2LPZhyDZhdi02KrYsduMPC9wPgogICAgICA8L2Rpdj4KICAgICAgPGRpdiBjbGFzcz0iZm9ybS1ncmlkIj4KICAgICAgICA8ZGl2IGNsYXNzPSJpbnB1dC1ncm91cCI+CiAgICAgICAgICA8bGFiZWw+Q3VzdG9tZXIgSUQ8L2xhYmVsPgogICAgICAgICAgPGlucHV0IGNsYXNzPSJpbnB1dCIgaWQ9Imluc2lnaHQtaWQiIHBsYWNlaG9sZGVyPSJDVVNUXy4uLiI+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvZGl2PgogICAgICA8ZGl2IGNsYXNzPSJhY3Rpb25zIj4KICAgICAgICA8YnV0dG9uIGlkPSJidG4taW5zaWdodCIgY2xhc3M9ImJ0biBidG4tcHJpbWFyeSI+CiAgICAgICAgICA8c3Bhbj7wn5OKPC9zcGFuPiDYr9ix24zYp9mB2Kog2q/Ystin2LHYtAogICAgICAgIDwvYnV0dG9uPgogICAgICAgIDxidXR0b24gaWQ9ImJ0bi1pbnNpZ2h0LXJlc2V0IiBjbGFzcz0iYnRuIGJ0bi1naG9zdCI+2LHbjNiz2Ko8L2J1dHRvbj4KICAgICAgPC9kaXY+CiAgICAgIDxkaXYgaWQ9Imluc2lnaHQtcmVzdWx0IiBjbGFzcz0iZGVidWctYXJlYSI+PC9kaXY+CiAgICA8L21haW4+CiAgPC9kaXY+CgogIDxzY3JpcHQ+CiAgICAvLyAtLS0gTG9naWMgJiBIZWxwZXJzIC0tLQogICAgY29uc3QgYmFzZVVybElucHV0ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImJhc2VVcmwiKTsKICAgIGNvbnN0IHRvYXN0RWwgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgidG9hc3QiKTsKICAgIGNvbnN0IHRvYXN0TXNnID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoInRvYXN0LW1zZyIpOwogICAgY29uc3QgdG9hc3REb3QgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKCIudG9hc3QtZG90Iik7CgogICAgY29uc3QgZGVmYXVsdEJhc2UgPSAoKSA9PiBgJHt3aW5kb3cubG9jYXRpb24ub3JpZ2luLnJlcGxhY2UoL1wvJC8sIiIpfS93ZWJob29rL2NybS1zbWFydC1mb3JtYDsKICAgIGJhc2VVcmxJbnB1dC52YWx1ZSA9IGxvY2FsU3RvcmFnZS5nZXRJdGVtKCJjcm1CYXNlVXJsIikgfHwgZGVmYXVsdEJhc2UoKTsKICAgIGJhc2VVcmxJbnB1dC5hZGRFdmVudExpc3RlbmVyKCJpbnB1dCIsICgpID0+IGxvY2FsU3RvcmFnZS5zZXRJdGVtKCJjcm1CYXNlVXJsIiwgYmFzZVVybElucHV0LnZhbHVlLnRyaW0oKSkpOwoKICAgIC8vIFRhYnMgTG9naWMKICAgIGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3JBbGwoIi50YWItYnRuIikuZm9yRWFjaChidG4gPT4gewogICAgICBidG4uYWRkRXZlbnRMaXN0ZW5lcigiY2xpY2siLCAoKSA9PiB7CiAgICAgICAgZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgiLnRhYi1idG4iKS5mb3JFYWNoKGIgPT4gYi5jbGFzc0xpc3QucmVtb3ZlKCJhY3RpdmUiKSk7CiAgICAgICAgZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgiLnRhYi1wYW5lbCIpLmZvckVhY2gocCA9PiBwLmNsYXNzTGlzdC5hZGQoImhpZGRlbiIpKTsKICAgICAgICAKICAgICAgICBidG4uY2xhc3NMaXN0LmFkZCgiYWN0aXZlIik7CiAgICAgICAgY29uc3QgcGFuZWwgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZChidG4uZGF0YXNldC50YWIpOwogICAgICAgIHBhbmVsLmNsYXNzTGlzdC5yZW1vdmUoImhpZGRlbiIpOwogICAgICAgIC8vIFJlc2V0IGFuaW1hdGlvbgogICAgICAgIHBhbmVsLmNsYXNzTGlzdC5yZW1vdmUoImFuaW0tZmFkZSIpOwogICAgICAgIHZvaWQgcGFuZWwub2Zmc2V0V2lkdGg7IAogICAgICAgIHBhbmVsLmNsYXNzTGlzdC5hZGQoImFuaW0tZmFkZSIpOwogICAgICB9KTsKICAgIH0pOwoKICAgIC8vIFRvYXN0IExvZ2ljCiAgICBsZXQgdG9hc3RUaW1lcjsKICAgIGZ1bmN0aW9uIHNob3dUb2FzdChtc2csIHR5cGU9Im5ldXRyYWwiKSB7CiAgICAgIGNsZWFyVGltZW91dCh0b2FzdFRpbWVyKTsKICAgICAgdG9hc3RNc2cudGV4dENvbnRlbnQgPSBtc2c7CiAgICAgIHRvYXN0RWwuY2xhc3NOYW1lID0gInRvYXN0IHNob3ciOwogICAgICB0b2FzdEVsLmNsYXNzTGlzdC5hZGQodHlwZSk7CiAgICAgIAogICAgICBjb25zdCBjb2xvcnMgPSB7IHN1Y2Nlc3M6ICIjMTBiOTgxIiwgZXJyb3I6ICIjZWY0NDQ0Iiwgd2FybjogIiNmNTllMGIiLCBuZXV0cmFsOiAiI2ZmZiIgfTsKICAgICAgdG9hc3REb3Quc3R5bGUuYmFja2dyb3VuZCA9IGNvbG9yc1t0eXBlXSB8fCBjb2xvcnMubmV1dHJhbDsKCiAgICAgIHRvYXN0VGltZXIgPSBzZXRUaW1lb3V0KCgpID0+IHsKICAgICAgICB0b2FzdEVsLmNsYXNzTGlzdC5yZW1vdmUoInNob3ciKTsKICAgICAgfSwgMzAwMCk7CiAgICB9CgogICAgLy8gTm9ybWFsaXphdGlvbgogICAgY29uc3Qgbm9ybWFsaXplUGhvbmUgPSAocmF3KSA9PiB7CiAgICAgIGxldCBzID0gU3RyaW5nKHJhdyB8fCAiIikudHJpbSgpLnJlcGxhY2UoL1teXGQrXS9nLCAiIik7CiAgICAgIGlmIChzLnN0YXJ0c1dpdGgoIjAwOTgiKSkgcyA9ICIrOTgiICsgcy5zbGljZSg0KTsKICAgICAgaWYgKHMuc3RhcnRzV2l0aCgiOTgiKSAmJiAhcy5zdGFydHNXaXRoKCIrOTgiKSkgcyA9ICIrOTgiICsgcy5zbGljZSgyKTsKICAgICAgaWYgKHMuc3RhcnRzV2l0aCgiKzk4IikpIHMgPSAiMCIgKyBzLnNsaWNlKDMpOwogICAgICBpZiAoL145XGR7OX0kLy50ZXN0KHMpKSBzID0gIjAiICsgczsKICAgICAgcmV0dXJuIHMucmVwbGFjZSgvXEQvZywgIiIpOwogICAgfTsKICAgIGNvbnN0IG5vcm1hbGl6ZU5hbWUgPSAoc3RyKSA9PiBTdHJpbmcoc3RyfHwiIikudHJpbSgpLnJlcGxhY2UoL1xzKy9nLCAiICIpLnRvTG93ZXJDYXNlKCk7CiAgICBjb25zdCBzYWZlUGFyc2VKU09OID0gKHN0cikgPT4geyB0cnkgeyByZXR1cm4gSlNPTi5wYXJzZShzdHIpOyB9IGNhdGNoKF8pIHsgcmV0dXJuIHt9OyB9IH07CiAgICBjb25zdCBmbXREYXRlID0gKGlzbykgPT4gaXNvID8gbmV3IERhdGUoaXNvKS50b0xvY2FsZURhdGVTdHJpbmcoJ2ZhLUlSJykgOiAiLSI7CiAgICBjb25zdCBmbXROdW0gPSAobikgPT4gbiA/IG4udG9Mb2NhbGVTdHJpbmcoKSA6ICIwIjsKCiAgICAvLyBBUEkgQ2FsbGVyCiAgICBhc3luYyBmdW5jdGlvbiBjYWxsQXBpKHBheWxvYWQsIHJlc3VsdElkKSB7CiAgICAgIGNvbnN0IHJlc3VsdEVsID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQocmVzdWx0SWQpOwogICAgICBjb25zdCBiYXNlID0gYmFzZVVybElucHV0LnZhbHVlLnRyaW0oKS5yZXBsYWNlKC9cLyQvLCIiKTsKICAgICAgCiAgICAgIGlmICghYmFzZSkgeyBzaG93VG9hc3QoItii2K/YsdizINmI2KjZh9mI2qkg2KrZhti424zZhSDZhti02K/ZhyDYp9iz2KoiLCAiZXJyb3IiKTsgcmV0dXJuIG51bGw7IH0KICAgICAgCiAgICAgIHNob3dUb2FzdCgi2K/YsSDYrdin2YQg2KfYsdiz2KfZhCDYr9ix2K7ZiNin2LPYqi4uLiIsICJ3YXJuIik7CiAgICAgIHJlc3VsdEVsLmlubmVySFRNTCA9IGA8ZGl2IHN0eWxlPSJ0ZXh0LWFsaWduOmNlbnRlcjsgcGFkZGluZzoyMHB4OyBjb2xvcjp2YXIoLS10ZXh0LW11dGVkKTsiPi4uLiDYr9ixINit2KfZhCDZvtix2K/Yp9iy2LQ8L2Rpdj5gOwoKICAgICAgdHJ5IHsKICAgICAgICBjb25zdCByZXMgPSBhd2FpdCBmZXRjaChiYXNlLCB7IAogICAgICAgICAgbWV0aG9kOiAiUE9TVCIsIAogICAgICAgICAgaGVhZGVyczogeyAiQ29udGVudC1UeXBlIjogImFwcGxpY2F0aW9uL2pzb24iIH0sIAogICAgICAgICAgYm9keTogSlNPTi5zdHJpbmdpZnkocGF5bG9hZCkgCiAgICAgICAgfSk7CiAgICAgICAgY29uc3QgdGV4dCA9IGF3YWl0IHJlcy50ZXh0KCk7CiAgICAgICAgbGV0IGRhdGEgPSB0ZXh0OyAKICAgICAgICB0cnkgeyBkYXRhID0gSlNPTi5wYXJzZSh0ZXh0KTsgfSBjYXRjaChfKXt9CiAgICAgICAgCiAgICAgICAgaWYgKHJlcy5vaykgewogICAgICAgICAgc2hvd1RvYXN0KCLYr9ix24zYp9mB2Kog2b7Yp9iz2K4g2YXZiNmB2YIiLCAic3VjY2VzcyIpOwogICAgICAgICAgcmV0dXJuIHsgZGF0YSwgb2s6IHRydWUgfTsKICAgICAgICB9IGVsc2UgewogICAgICAgICAgc2hvd1RvYXN0KGDYrti32KfbjCAke3Jlcy5zdGF0dXN9YCwgImVycm9yIik7CiAgICAgICAgICByZW5kZXJSYXcocmVzdWx0RWwsIGRhdGEpOwogICAgICAgICAgcmV0dXJuIG51bGw7CiAgICAgICAgfQogICAgICB9IGNhdGNoIChlKSB7CiAgICAgICAgc2hvd1RvYXN0KCLYrti32KfbjCDYp9ix2KrYqNin2Lcg2KjYpyDYs9ix2YjYsSIsICJlcnJvciIpOwogICAgICAgIHJlbmRlclJhdyhyZXN1bHRFbCwgU3RyaW5nKGUpKTsKICAgICAgICByZXR1cm4gbnVsbDsKICAgICAgfQogICAgfQoKICAgIC8vIFJlbmRlciBIZWxwZXJzCiAgICBmdW5jdGlvbiByZW5kZXJSYXcoY29udGFpbmVyLCBkYXRhKSB7CiAgICAgIGNvbnRhaW5lci5pbm5lckhUTUwgPSAiIjsKICAgICAgY29uc3QgZGV0YWlscyA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoImRldGFpbHMiKTsKICAgICAgZGV0YWlscy5vcGVuID0gdHJ1ZTsKICAgICAgZGV0YWlscy5pbm5lckhUTUwgPSBgPHN1bW1hcnk+2b7Yp9iz2K4g2K7Yp9mFIChKU09OKTwvc3VtbWFyeT48cHJlPiR7dHlwZW9mIGRhdGEgPT09ICJzdHJpbmciID8gZGF0YSA6IEpTT04uc3RyaW5naWZ5KGRhdGEsIG51bGwsIDIpfTwvcHJlPmA7CiAgICAgIGNvbnRhaW5lci5hcHBlbmRDaGlsZChkZXRhaWxzKTsKICAgIH0KCiAgICBmdW5jdGlvbiByZW5kZXJEYXNoYm9hcmQoY29udGFpbmVyLCBkYXRhKSB7CiAgICAgIGNvbnRhaW5lci5pbm5lckhUTUwgPSAiIjsKICAgICAgCiAgICAgIC8vIEhhbmRsZSBzcGVjaWFsIHN0YXRlcwogICAgICBpZiAoZGF0YS5tYXRjaF9zdGF0dXMgPT09ICJub19tYXRjaCIpIHsKICAgICAgICBjb250YWluZXIuaW5uZXJIVE1MID0gYDxkaXYgc3R5bGU9InBhZGRpbmc6MjBweDsgdGV4dC1hbGlnbjpjZW50ZXI7IGJvcmRlcjoxcHggZGFzaGVkIHZhcigtLWdsYXNzLWJvcmRlcik7IGJvcmRlci1yYWRpdXM6MTJweDsgY29sb3I6dmFyKC0tZGFuZ2VyKTsiPtmG2KrbjNis2YfigIzYp9uMINuM2KfZgdiqINmG2LTYry48L2Rpdj5gOwogICAgICAgIHJlbmRlclJhdyhjb250YWluZXIsIGRhdGEpOwogICAgICAgIHJldHVybjsKICAgICAgfQogICAgICAKICAgICAgY29uc3QgYyA9IGRhdGEuY3VzdG9tZXIgfHwge307CiAgICAgIGNvbnN0IG1ldHJpY3MgPSBzYWZlUGFyc2VKU09OKGMubWV0cmljc19qc29uIHx8IGRhdGEubWV0cmljc19qc29uIHx8ICJ7fSIpOwoKICAgICAgY29uc3QgaHRtbCA9IGAKICAgICAgICA8ZGl2IGNsYXNzPSJyZXN1bHQtY2FyZCI+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJyZXN1bHQtaGVhZGVyIj4KICAgICAgICAgICAgPGRpdj4KICAgICAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6MThweDsgZm9udC13ZWlnaHQ6NzAwOyI+JHtjLm5hbWUgfHwgItqp2KfYsdio2LEg2YbYp9i02YbYp9izIn08L2Rpdj4KICAgICAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6MTJweDsgY29sb3I6dmFyKC0tdGV4dC1tdXRlZCk7IGZvbnQtZmFtaWx5OidTcGFjZSBHcm90ZXNrJyI+JHtjLmN1c3RvbWVyX2lkIHx8ICJJRDogLSJ9PC9kaXY+CiAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJwaWxsIj4ke2MucGhvbmUgfHwgIk5vIFBob25lIn08L2Rpdj4KICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPGRpdiBjbGFzcz0ibWV0cmljcy1ncmlkIj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0ibWV0cmljLWl0ZW0iPgogICAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJtZXRyaWMtbGFiZWwiPtii2K7YsduM2YYg2KjYp9iy2K/bjNivPC9zcGFuPgogICAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJtZXRyaWMtdmFsdWUiIHN0eWxlPSJmb250LXNpemU6MTRweCI+JHtmbXREYXRlKG1ldHJpY3MubGFzdF92aXNpdCl9PC9zcGFuPgogICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0ibWV0cmljLWl0ZW0iPgogICAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJtZXRyaWMtbGFiZWwiPtiu2LHbjNivICjbttuwINix2YjYsik8L3NwYW4+CiAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9Im1ldHJpYy12YWx1ZSI+JHtmbXROdW0obWV0cmljcy5vcmRlcnNfbGFzdF82MF9kYXlzKX08L3NwYW4+CiAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJtZXRyaWMtaXRlbSI+CiAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9Im1ldHJpYy1sYWJlbCI+2YXYrNmF2YjYuSDZh9iy24zZhtmHPC9zcGFuPgogICAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJtZXRyaWMtdmFsdWUiIHN0eWxlPSJjb2xvcjp2YXIoLS1zdWNjZXNzKSI+JHtmbXROdW0obWV0cmljcy50b3RhbF9zcGVudCl9PC9zcGFuPgogICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0ibWV0cmljLWl0ZW0iPgogICAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJtZXRyaWMtbGFiZWwiPtiq2LnYr9in2K8g2KjYp9iy2K/bjNivPC9zcGFuPgogICAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJtZXRyaWMtdmFsdWUiPiR7Zm10TnVtKG1ldHJpY3MudmlzaXRzX2NvdW50KX08L3NwYW4+CiAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJtZXRyaWMtaXRlbSI+CiAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9Im1ldHJpYy1sYWJlbCI+2YXYrdi12YjZhCDZhdit2KjZiNioPC9zcGFuPgogICAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJtZXRyaWMtdmFsdWUiIHN0eWxlPSJmb250LXNpemU6MTRweCI+JHttZXRyaWNzLmZhdl9pdGVtIHx8ICItIn08L3NwYW4+CiAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgPGRpdiBjbGFzcz0ibWV0cmljLWl0ZW0iPgogICAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJtZXRyaWMtbGFiZWwiPk5QUyAvINmB24zYr9io2qk8L3NwYW4+CiAgICAgICAgICAgICAgPHNwYW4gY2xhc3M9Im1ldHJpYy12YWx1ZSIgc3R5bGU9ImZvbnQtc2l6ZToxNHB4Ij4ke21ldHJpY3MubGFzdF9mZWVkYmFjayB8fCAiLSJ9PC9zcGFuPgogICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDwvZGl2PgogICAgICAgIDwvZGl2PgogICAgICBgOwogICAgICBjb250YWluZXIuaW5uZXJIVE1MID0gaHRtbDsKICAgICAgCiAgICAgIC8vIEFwcGVuZCByYXcganNvbiBjb2xsYXBzZWQKICAgICAgY29uc3QgZGV0YWlscyA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoImRldGFpbHMiKTsKICAgICAgZGV0YWlscy5zdHlsZS5tYXJnaW5Ub3AgPSAiMTJweCI7CiAgICAgIGRldGFpbHMuaW5uZXJIVE1MID0gYDxzdW1tYXJ5PtmF2LTYp9mH2K/ZhyBKU09OINqp2KfZhdmEPC9zdW1tYXJ5PjxwcmU+JHtKU09OLnN0cmluZ2lmeShkYXRhLCBudWxsLCAyKX08L3ByZT5gOwogICAgICBjb250YWluZXIuYXBwZW5kQ2hpbGQoZGV0YWlscyk7CiAgICB9CgogICAgZnVuY3Rpb24gcmVuZGVyU3VjY2Vzc0NhcmQoY29udGFpbmVyLCBkYXRhLCB0aXRsZSkgewogICAgICBjb250YWluZXIuaW5uZXJIVE1MID0gYAogICAgICAgIDxkaXYgc3R5bGU9ImJhY2tncm91bmQ6cmdiYSgxNiwgMTg1LCAxMjksIDAuMSk7IGJvcmRlcjoxcHggc29saWQgcmdiYSgxNiwgMTg1LCAxMjksIDAuMik7IGJvcmRlci1yYWRpdXM6MTJweDsgcGFkZGluZzoxNnB4OyBkaXNwbGF5OmZsZXg7IGFsaWduLWl0ZW1zOmNlbnRlcjsgZ2FwOjEycHg7IG1hcmdpbi1ib3R0b206MTJweDsiPgogICAgICAgICAgPGRpdiBzdHlsZT0iYmFja2dyb3VuZDojMTBiOTgxOyB3aWR0aDoyNHB4OyBoZWlnaHQ6MjRweDsgYm9yZGVyLXJhZGl1czo1MCU7IGRpc3BsYXk6ZmxleDsgYWxpZ24taXRlbXM6Y2VudGVyOyBqdXN0aWZ5LWNvbnRlbnQ6Y2VudGVyOyBjb2xvcjpibGFjazsgZm9udC13ZWlnaHQ6Ym9sZDsiPuKckzwvZGl2PgogICAgICAgICAgPHN0cm9uZyBzdHlsZT0iY29sb3I6IzEwYjk4MTsiPiR7dGl0bGV9PC9zdHJvbmc+CiAgICAgICAgPC9kaXY+CiAgICAgIGA7CiAgICAgIHJlbmRlclJhdyhjb250YWluZXIsIGRhdGEpOwogICAgfQoKICAgIC8vIC0tLSBFdmVudCBMaXN0ZW5lcnMgLS0tCiAgICAKICAgIC8vIFNlYXJjaAogICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImJ0bi1zZWFyY2giKS5hZGRFdmVudExpc3RlbmVyKCJjbGljayIsIGFzeW5jICgpID0+IHsKICAgICAgY29uc3QgcSA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJzZWFyY2gtcXVlcnkiKS52YWx1ZTsKICAgICAgaWYgKCFxLnRyaW0oKSkgcmV0dXJuIHNob3dUb2FzdCgi2YTYt9mB2Kcg2YjYsdmI2K/bjCDYsdinINm+2LEg2qnZhtuM2K8iLCAid2FybiIpOwogICAgICAKICAgICAgY29uc3QgaXNQaG9uZSA9IC9eXCs/XGR7NywxNX0kLy50ZXN0KHEucmVwbGFjZSgvXEQvZywiIikpOwogICAgICBjb25zdCBwYXlsb2FkID0geyBtb2RlOiAic2VhcmNoIiwgc2VhcmNoX3F1ZXJ5OiBpc1Bob25lID8gbm9ybWFsaXplUGhvbmUocSkgOiBub3JtYWxpemVOYW1lKHEpIH07CiAgICAgIAogICAgICBjb25zdCByZXMgPSBhd2FpdCBjYWxsQXBpKHBheWxvYWQsICJzZWFyY2gtcmVzdWx0Iik7CiAgICAgIGlmIChyZXMpIHJlbmRlckRhc2hib2FyZChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgic2VhcmNoLXJlc3VsdCIpLCByZXMuZGF0YSk7CiAgICB9KTsKICAgIAogICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImJ0bi1zZWFyY2gtcmVzZXQiKS5hZGRFdmVudExpc3RlbmVyKCJjbGljayIsICgpID0+IHsKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoInNlYXJjaC1xdWVyeSIpLnZhbHVlID0gIiI7CiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJzZWFyY2gtcmVzdWx0IikuaW5uZXJIVE1MID0gIiI7CiAgICB9KTsKCiAgICAvLyBDcmVhdGUKICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJidG4tY3JlYXRlIikuYWRkRXZlbnRMaXN0ZW5lcigiY2xpY2siLCBhc3luYyAoKSA9PiB7CiAgICAgIGNvbnN0IG5hbWUgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiY3JtLW5hbWUiKS52YWx1ZTsKICAgICAgY29uc3QgcGhvbmUgPSBub3JtYWxpemVQaG9uZShkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiY3JtLXBob25lIikudmFsdWUpOwogICAgICBjb25zdCBiaXJ0aGRheSA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJjcm0tYmRheSIpLnZhbHVlLnRyaW0oKTsKICAgICAgCiAgICAgIGlmICghbmFtZS50cmltKCkgfHwgIXBob25lKSByZXR1cm4gc2hvd1RvYXN0KCLZhtin2YUg2Ygg2YXZiNio2KfbjNmEINin2YTYstin2YXbjCDYp9iz2KoiLCAid2FybiIpOwogICAgICAKICAgICAgY29uc3QgcGF5bG9hZCA9IHsgbW9kZTogImNyZWF0ZV9jcm0iLCBuYW1lLCBwaG9uZSwgYmlydGhkYXkgfTsKICAgICAgY29uc3QgcmVzID0gYXdhaXQgY2FsbEFwaShwYXlsb2FkLCAiY3JlYXRlLXJlc3VsdCIpOwogICAgICBpZiAocmVzKSByZW5kZXJTdWNjZXNzQ2FyZChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiY3JlYXRlLXJlc3VsdCIpLCByZXMuZGF0YSwgItmF2LTYqtix24wg2KjYpyDZhdmI2YHZgtuM2Kog2LPYp9iu2KrZhyDYtNivIik7CiAgICB9KTsKICAgIAogICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImJ0bi1jcmVhdGUtcmVzZXQiKS5hZGRFdmVudExpc3RlbmVyKCJjbGljayIsICgpID0+IHsKICAgICAgIFsiY3JtLW5hbWUiLCJjcm0tcGhvbmUiLCJjcm0tYmRheSJdLmZvckVhY2goaWQgPT4gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoaWQpLnZhbHVlPSIiKTsKICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJjcmVhdGUtcmVzdWx0IikuaW5uZXJIVE1MID0gIiI7CiAgICB9KTsKCiAgICAvLyBHaG9zdAogICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImJ0bi1naG9zdCIpLmFkZEV2ZW50TGlzdGVuZXIoImNsaWNrIiwgYXN5bmMgKCkgPT4gewogICAgICBjb25zdCBuYW1lID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImdob3N0LW5hbWUiKS52YWx1ZTsKICAgICAgY29uc3Qgc2VhcmNoID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImdob3N0LXNlYXJjaCIpLnZhbHVlOwogICAgICBjb25zdCBiaXJ0aGRheSA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJnaG9zdC1iZGF5IikudmFsdWUudHJpbSgpOwogICAgICAKICAgICAgaWYgKCFuYW1lLnRyaW0oKSAmJiAhc2VhcmNoLnRyaW0oKSkgcmV0dXJuIHNob3dUb2FzdCgi2YbYp9mFINuM2Kcg2qnZhNuM2K8g2KzYs9iq2KzZiCDYp9mE2LLYp9mF24wg2KfYs9iqIiwgIndhcm4iKTsKICAgICAgCiAgICAgIGNvbnN0IHBheWxvYWQgPSB7IG1vZGU6ICJjcmVhdGVfZ2hvc3QiLCBuYW1lLCBzZWFyY2hfcXVlcnk6IG5vcm1hbGl6ZU5hbWUoc2VhcmNoIHx8IG5hbWUpLCBiaXJ0aGRheSB9OwogICAgICBjb25zdCByZXMgPSBhd2FpdCBjYWxsQXBpKHBheWxvYWQsICJnaG9zdC1yZXN1bHQiKTsKICAgICAgaWYgKHJlcykgcmVuZGVyU3VjY2Vzc0NhcmQoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImdob3N0LXJlc3VsdCIpLCByZXMuZGF0YSwgIkdob3N0IENyZWF0ZWQgU3VjY2Vzc2Z1bGx5Iik7CiAgICB9KTsKICAgIAogICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImJ0bi1naG9zdC1yZXNldCIpLmFkZEV2ZW50TGlzdGVuZXIoImNsaWNrIiwgKCkgPT4gewogICAgICAgWyJnaG9zdC1uYW1lIiwiZ2hvc3Qtc2VhcmNoIiwiZ2hvc3QtYmRheSJdLmZvckVhY2goaWQgPT4gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoaWQpLnZhbHVlPSIiKTsKICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJnaG9zdC1yZXN1bHQiKS5pbm5lckhUTUwgPSAiIjsKICAgIH0pOwoKICAgIC8vIEluc2lnaHQKICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJidG4taW5zaWdodCIpLmFkZEV2ZW50TGlzdGVuZXIoImNsaWNrIiwgYXN5bmMgKCkgPT4gewogICAgICBjb25zdCBpZCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJpbnNpZ2h0LWlkIikudmFsdWUudHJpbSgpOwogICAgICBpZiAoIWlkKSByZXR1cm4gc2hvd1RvYXN0KCJDdXN0b21lciBJRCDYp9mE2LLYp9mF24wg2KfYs9iqIiwgIndhcm4iKTsKICAgICAgCiAgICAgIGNvbnN0IHBheWxvYWQgPSB7IG1vZGU6ICJpbnNpZ2h0IiwgY3VzdG9tZXJfaWQ6IGlkIH07CiAgICAgIGNvbnN0IHJlcyA9IGF3YWl0IGNhbGxBcGkocGF5bG9hZCwgImluc2lnaHQtcmVzdWx0Iik7CiAgICAgIGlmIChyZXMpIHJlbmRlckRhc2hib2FyZChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiaW5zaWdodC1yZXN1bHQiKSwgcmVzLmRhdGEpOwogICAgfSk7CgogICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImJ0bi1pbnNpZ2h0LXJlc2V0IikuYWRkRXZlbnRMaXN0ZW5lcigiY2xpY2siLCAoKSA9PiB7CiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJpbnNpZ2h0LWlkIikudmFsdWU9IiI7CiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJpbnNpZ2h0LXJlc3VsdCIpLmlubmVySFRNTD0iIjsKICAgIH0pOwoKICAgIC8vIERlbW8gRmlsbAogICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImZpbGxEZW1vIikuYWRkRXZlbnRMaXN0ZW5lcigiY2xpY2siLCAoKSA9PiB7CiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJzZWFyY2gtcXVlcnkiKS52YWx1ZSA9ICIwOTEyMzQ1Njc4OSI7CiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJjcm0tbmFtZSIpLnZhbHVlID0gIti52YTbjCDYsdi22KfbjNuMIjsKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImNybS1waG9uZSIpLnZhbHVlID0gIjA5MTIzNDU2Nzg5IjsKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImNybS1iZGF5IikudmFsdWUgPSAiMTk5MC0wMS0wMSI7CiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJnaG9zdC1uYW1lIikudmFsdWUgPSAi2YXYtNiq2LHbjCDZhdmH2YXYp9mGIjsKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImluc2lnaHQtaWQiKS52YWx1ZSA9ICJDVVNUXzEyMyI7CiAgICAgIHNob3dUb2FzdCgi2YHYsdmF4oCM2YfYpyDYqNinINiv2KfYr9mH4oCM2YfYp9uMINmG2YXZiNmG2Ycg2b7YsSDYtNiv2YbYryIpOwogICAgfSk7CgogIDwvc2NyaXB0Pgo8L2JvZHk+CjwvaHRtbD4K\";\nconst html = Buffer.from(b64, 'base64').toString('utf8');\nreturn [{ json: { html } }];"
+      },
+      "id": "b5a6d0e9-3dfd-4c6c-9b35-2a9f3a7b6f2e",
+      "name": "Load CRM UI (Base64)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -1856,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "responseBody": "={{$json.html}}",
+        "options": {
+          "responseHeaders": [
+            {
+              "name": "Content-Type",
+              "value": "text/html; charset=utf-8"
+            }
+          ],
+          "responseCode": 200
+        }
+      },
+      "id": "f2d6f4c0-5d57-41b5-83ba-2d86773f6a70",
+      "name": "Return CRM UI",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -1632,
+        560
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Smart CRM Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate & Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Input OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input OK?": {
+      "main": [
+        [
+          {
+            "node": "Mode Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mode Switch": {
+      "main": [
+        [
+          {
+            "node": "Normalize Search Query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Create CRM Row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Ghost Row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read Customer (Insight)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Search Query": {
+      "main": [
+        [
+          {
+            "node": "Read Customers (All)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Customers (All)": {
+      "main": [
+        [
+          {
+            "node": "Filter Matches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Matches": {
+      "main": [
+        [
+          {
+            "node": "Route Match Count",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Match Count": {
+      "main": [
+        [
+          {
+            "node": "Match Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match Switch": {
+      "main": [
+        [
+          {
+            "node": "Return No Match",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Single",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Multi Match",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Single": {
+      "main": [
+        [
+          {
+            "node": "Read Orders by Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Orders by Customer": {
+      "main": [
+        [
+          {
+            "node": "Compute Metrics & Insight",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Metrics & Insight": {
+      "main": [
+        [
+          {
+            "node": "Update Customer Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Customer Metrics": {
+      "main": [
+        [
+          {
+            "node": "Return Single Insight",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Create CRM Row": {
+      "main": [
+        [
+          {
+            "node": "Append Customer (CRM)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Customer (CRM)": {
+      "main": [
+        [
+          {
+            "node": "Return CRM Created",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Ghost Row": {
+      "main": [
+        [
+          {
+            "node": "Append Customer (Ghost)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Customer (Ghost)": {
+      "main": [
+        [
+          {
+            "node": "Return Ghost Created",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Customer (Insight)": {
+      "main": [
+        [
+          {
+            "node": "Insight Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insight Found?": {
+      "main": [
+        [
+          {
+            "node": "Pass Insight Customer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Insight Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass Insight Customer": {
+      "main": [
+        [
+          {
+            "node": "Read Orders (Insight)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Orders (Insight)": {
+      "main": [
+        [
+          {
+            "node": "Compute Insight Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Insight Metrics": {
+      "main": [
+        [
+          {
+            "node": "Update Customer Metrics (Insight)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Customer Metrics (Insight)": {
+      "main": [
+        [
+          {
+            "node": "Return Insight Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serve CRM UI (GET)": {
+      "main": [
+        [
+          {
+            "node": "Load CRM UI (Base64)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load CRM UI (Base64)": {
+      "main": [
+        [
+          {
+            "node": "Return CRM UI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fa34a347-5b08-42b8-8f8a-45c25b9bd331",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6cf7263854cc3e6b96684131a28dfb69a464e83277a7241a6ad3b3b46b862ceb"
+  },
+  "id": "AvtDt55C8b1EdVsm",
+  "tags": []
+}
